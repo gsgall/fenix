@@ -1,12 +1,12 @@
 [Mesh/gmg]
   type = GeneratedMeshGenerator
   dim = 2
-  nx = 20
-  ny = 20
-  xmin = -10
-  xmax = 10
-  ymin = -10
-  ymax = 10
+  nx = 15
+  ny = 15
+  xmin = -1.5
+  xmax = 1.5
+  ymin = -1.5
+  ymax = 1.5
 []
 
 [Variables]
@@ -50,7 +50,6 @@
     variable = Bz
   []
 []
-
 
 [Functions]
   [E_x_ic]
@@ -124,7 +123,7 @@
     start_points = '0 1 0'
     start_velocities = '1 0 0'
     charge = 1
-    mass = 1e-5
+    mass = 2e-1
     execute_on = 'TIMESTEP_BEGIN'
     always_cache_traces = true
     data_on_cache_traces = true
@@ -148,24 +147,32 @@
 []
 
 [Executioner]
-  # type = Steady
   type = Transient
   dt = 1e-2
-  num_steps = 5000
+  num_steps = 2700
+[]
+
+[VectorPostprocessors]
+  [collector]
+    type = TestParticleMotionData
+    study = study
+    execute_on = "TIMESTEP_BEGIN"
+  []
 []
 
 [Problem]
   solve = false
 []
 
-
 [Outputs]
-  exodus = true
-  [rays]
-    type = RayTracingExodus
-    study = study
-    output_data = true
-    # output_data_names='v_x v_y v_z charge mass'
-    execute_on = final
+  [data]
+    type = CSV
+    execute_on = 'FINAL'
   []
+  # [rays]
+  #   type = RayTracingExodus
+  #   study = study
+  #   # output_data_names='v_x v_y v_z charge mass'
+  #   execute_on = TIMESTEP_BEGIN
+  # []
 []
