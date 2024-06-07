@@ -25,4 +25,5 @@ public:
    */
   virtual void
   setupStep(Ray & ray, Point & v, const Real q_m_ratio, const Real distance = 0) const override;
+
 };

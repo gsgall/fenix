@@ -81,7 +81,6 @@ protected:
    */
   virtual void reinitializeParticles();
 
-private:
   /// Whether or not we've generated rays yet (restartable)
   bool & _has_generated;
 };

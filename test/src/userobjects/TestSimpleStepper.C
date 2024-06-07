@@ -32,4 +32,5 @@ TestSimpleStepper::setupStep(Ray & ray,
                              const Real /*disatnce*/) const
 {
   setMaxDistanceAndDirection(ray, v, _dt);
+  return;
 }
