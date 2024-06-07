@@ -49,8 +49,8 @@
   [study]
     type = RepeatableRayStudy
     names = 'test'
-    start_points = '0 0 0'
-    end_points = '1 1 0'
+    start_points = '1 1 0'
+    end_points = '2 2 0'
     ray_data_names = 'weight v_x v_y'
     initial_ray_data = '1 1 1'
     always_cache_traces = true
