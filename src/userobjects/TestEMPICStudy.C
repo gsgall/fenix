@@ -37,7 +37,7 @@ TestEMPICStudy::TestEMPICStudy(const InputParameters & parameters)
     _simple_stepper(getUserObject<TestSimpleStepper>("simple_stepper")),
     _initializer(getUserObject<InitializerBase>("initializer")),
     _replicated_rays(getParam<bool>("replicated_rays")),
-    _prev_t(std::numeric_limits<float>::min())
+    _prev_t(std::numeric_limits<float>::lowest())
 {
 }
 
@@ -45,14 +45,13 @@ void
 TestEMPICStudy::initializeParticles()
 {
   auto initial_data = _initializer.getParticleData();
-  _reusable_ray_data = initial_data;
   // if there are no rays on this processor: do nothing
   if (initial_data.size() == 0)
     return;
 
   std::vector<std::shared_ptr<Ray>> rays(initial_data.size());
 
-  for (unsigned int i = 0; i < initial_data.size(); ++i)
+  for (unsigned int i = 0; i < initial_data.size(); i++)
   {
     if (_replicated_rays)
     {
@@ -72,31 +71,40 @@ TestEMPICStudy::initializeParticles()
       _stepper.setupStep(
           *rays[i], initial_data[i].velocity, initial_data[i].charge / initial_data[i].mass);
       setVelocity(*rays[i], initial_data[i].velocity);
+      _reusable_ray_data = initial_data;
     }
   }
 
-  if (_replicated_rays)
+  if (!_replicated_rays)
   {
-    // Claim the rays
-    std::vector<std::shared_ptr<Ray>> claimed_rays;
-    ClaimRays claim_rays(*this, rays, claimed_rays, false);
-    claim_rays.claim();
-    // lets loop through the claimed rays and set them up for the step
-    // we need to do so because before they are claimed the ray does not
-    // know what element it is in
-    int i = 0;
-    for (auto & ray : claimed_rays)
-    {
-      _stepper.setupStep(
-          *ray, initial_data[i].velocity, ray->data()[_charge_index] / ray->data()[_mass_index]);
-      setVelocity(*ray, initial_data[i].velocity);
-      _reusable_ray_data[i].elem = ray->currentElem();
-    }
-    moveRaysToBuffer(claimed_rays);
-  } else {
     moveRaysToBuffer(rays);
+    return;
   }
-
+  // Claim the rays
+  std::vector<std::shared_ptr<Ray>> claimed_rays;
+  ClaimRays claim_rays(*this, rays, claimed_rays, false);
+  claim_rays.claim();
+  // lets loop through the claimed rays and set them up for the step
+  // we need to do so because before they are claimed the ray does not
+  // know what element it is in
+  _reusable_ray_data = std::vector<InitialParticleData>(claimed_rays.size());
+  int i = 0;
+  for (auto & ray : claimed_rays)
+  {
+    getVelocity(*ray, _temporary_velocity);
+    _stepper.setupStep(
+        *ray, _temporary_velocity, ray->data()[_charge_index] / ray->data()[_mass_index]);
+    setVelocity(*ray, _temporary_velocity);
+    _reusable_ray_data[i].position = ray->currentPoint();
+    _reusable_ray_data[i].elem = ray->currentElem();
+    _reusable_ray_data[i].velocity(0)  = ray->data(_v_x_index);
+    _reusable_ray_data[i].velocity(1)  = ray->data(_v_y_index);
+    _reusable_ray_data[i].velocity(2)  = ray->data(_v_z_index);
+    _reusable_ray_data[i].mass  = ray->data(_mass_index);
+    _reusable_ray_data[i].weight  = ray->data(_weight_index);
+    _reusable_ray_data[i].charge  = ray->data(_charge_index);
+  }
+  moveRaysToBuffer(claimed_rays);
 }
 
 void
@@ -124,7 +132,6 @@ TestEMPICStudy::reinitializeParticles()
 
     setVelocity(*ray, _temporary_velocity);
     // storing everything we need to retrace the ray
-    //
     _reusable_ray_data[ray_count].elem = elem;
     _reusable_ray_data[ray_count].position = point;
     _reusable_ray_data[ray_count].mass = ray->data(_mass_index);
@@ -157,6 +164,7 @@ TestEMPICStudy::generateRays()
     moveRaysToBuffer(_banked_rays);
     return;
   }
+
   std::vector<std::shared_ptr<Ray>> rays(_reusable_ray_data.size());
   for (unsigned int i = 0; i < _reusable_ray_data.size(); ++i)
   {
@@ -169,8 +177,8 @@ TestEMPICStudy::generateRays()
     _simple_stepper.setupStep(*rays[i],
                               _reusable_ray_data[i].velocity,
                               rays[i]->data(_charge_index) / rays[i]->data(_mass_index));
-    moveRaysToBuffer(rays);
   }
+  moveRaysToBuffer(rays);
 }
 
 void

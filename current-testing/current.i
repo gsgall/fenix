@@ -51,8 +51,10 @@
     mass = 1
     charge = 1
     weight = 1
-    start_points = '0 0 0'
-    start_velocities = '1 1 0'
+    start_points = '0 10 0
+                    0 0 0'
+    start_velocities = '1 -1 0
+                        1 1 0'
   []
 
   [velocity_updater]

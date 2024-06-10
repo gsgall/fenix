@@ -48,11 +48,14 @@
 [UserObjects]
   [study]
     type = RepeatableRayStudy
-    names = 'test'
-    start_points = '1 1 0'
-    end_points = '2 2 0'
+    names = 'test1 test2'
+    start_points = '2 2 0
+                    2 8 0'
+    end_points = '3 3 0
+                  3 7 0'
     ray_data_names = 'weight v_x v_y'
-    initial_ray_data = '1 1 1'
+    initial_ray_data = '1 1 1;
+                        1 1 1'
     always_cache_traces = true
     data_on_cache_traces = true
     execute_on = 'PRE_KERNELS'
