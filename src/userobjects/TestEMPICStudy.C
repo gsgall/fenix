@@ -111,10 +111,14 @@ void
 TestEMPICStudy::reinitializeParticles()
 {
   // Reset each ray
-  _reusable_ray_data = std::vector<InitialParticleData>(_banked_rays.size());
-  int ray_count = 0;
+  // _reusable_ray_data = std::vector<InitialParticleData>(_banked_rays.size());
+  _continuing_banked_rays = std::vector<std::shared_ptr<Ray>>(0);
+
   for (auto & ray : _banked_rays)
   {
+    // this should catch most of the rays that are killed while tracing
+    if (ray->distance() < ray->maxDistance())
+      continue;
     // Store off the ray's info before we reset it
     const auto elem = ray->currentElem();
     const auto point = ray->currentPoint();
@@ -131,18 +135,23 @@ TestEMPICStudy::reinitializeParticles()
         *ray, _temporary_velocity, ray->data()[_charge_index] / ray->data()[_mass_index], distance);
 
     setVelocity(*ray, _temporary_velocity);
-    // storing everything we need to retrace the ray
-    _reusable_ray_data[ray_count].elem = elem;
-    _reusable_ray_data[ray_count].position = point;
-    _reusable_ray_data[ray_count].mass = ray->data(_mass_index);
-    _reusable_ray_data[ray_count].weight = ray->data(_weight_index);
-    _reusable_ray_data[ray_count].charge = ray->data(_charge_index);
-    _reusable_ray_data[ray_count].velocity(0) = ray->data(_v_x_index);
-    _reusable_ray_data[ray_count].velocity(1) = ray->data(_v_y_index);
-    _reusable_ray_data[ray_count].velocity(2) = ray->data(_v_z_index);
 
-    ray_count++;
+    // storing everything we need to retrace the ray
+    InitialParticleData temp_particle_data;
+    temp_particle_data.elem = elem;
+    temp_particle_data.position = point;
+    temp_particle_data.mass = ray->data(_mass_index);
+    temp_particle_data.weight = ray->data(_weight_index);
+    temp_particle_data.charge = ray->data(_charge_index);
+    temp_particle_data.velocity(0) = ray->data(_v_x_index);
+    temp_particle_data.velocity(1) = ray->data(_v_y_index);
+    temp_particle_data.velocity(2) = ray->data(_v_z_index);
+
+    _reusable_ray_data.push_back(temp_particle_data);
+    _continuing_banked_rays.push_back(ray);
   }
+  // resizing the container so that
+  // we are not trying trace rays
 }
 
 void
@@ -161,7 +170,8 @@ TestEMPICStudy::generateRays()
   {
     reinitializeParticles();
     // Add the rays to be traced
-    moveRaysToBuffer(_banked_rays);
+    std::cout << _continuing_banked_rays.size() << std::endl;
+    moveRaysToBuffer(_continuing_banked_rays);
     return;
   }
 

@@ -1,13 +1,10 @@
 [Mesh/gmg]
   type = GeneratedMeshGenerator
-  dim = 2
+  dim = 1
   nx = 10
-  ny = 10
+  # ny = 4
+  # nz = 4
   xmax = 10
-  ymax = 10
-  # ny = 5
-  # nz = 5
-  # xmax = 10
   # ymax = 10
   # zmax = 10
 []
@@ -15,8 +12,10 @@
 [Variables]
   [J_x]
   []
-  [J_y]
-  []
+  # [J_y]
+  # []
+  # [J_z]
+  # []
 []
 
 [AuxVariables]
@@ -35,26 +34,42 @@
 
 
 [Kernels]
-  [projection]
+  [projection_x]
     type = ProjectionKernel
     variable = J_x
   []
-  [projectiony]
-    type = ProjectionKernel
-    variable = J_y
+  # [projection_y]
+  #   type = ProjectionKernel
+  #   variable = J_y
+  # []
+  # [projection_z]
+  #   type = ProjectionKernel
+  #   variable = J_z
+  # []
+[]
+
+
+[Distributions]
+  [one]
+    type = Constant
+    value = 0.75
+  []
+
+  [zero]
+    type = Constant
+    value = 0.0
   []
 []
 
 [UserObjects]
   [initializer]
-    type = PlacedInitializer
+    type = ParticlesPerElementInitializer
     mass = 1
     charge = 1
-    weight = 1
-    start_points = '0 10 0
-                    0 0 0'
-    start_velocities = '1 -1 0
-                        1 1 0'
+    number_density = 2
+    particles_per_element = 100
+    velocity_distributions = 'one one one'
+    seed = 10
   []
 
   [velocity_updater]
@@ -68,6 +83,7 @@
     simple_stepper = velocity_updater
     always_cache_traces = true
     data_on_cache_traces = true
+    replicated_rays = false
     execute_on = "PRE_KERNELS"
   []
 
@@ -76,29 +92,40 @@
 [RayBCs]
   [Kill]
     type = KillRayBC
+    # boundary = 'left right top bottom front back'
     boundary = 'left right'
     study = study
   []
 []
 
 [RayKernels]
-  [current]
-    type = LineSourceRayKernel
+  [current_x]
+    type = CurrentRayKernel
     variable = J_x
-    ray_data_factor_names = 'weight v_x'
+    component = 0
     extra_vector_tags = dump_value
   []
-  [currenty]
-    type = LineSourceRayKernel
-    variable = J_y
-    ray_data_factor_names = 'weight v_y'
-    extra_vector_tags = dump_value
-  []
+  # [current_y]
+  #   type = CurrentRayKernel
+  #   variable = J_y
+  #   component = 1
+  # []
+  # [current_z]
+  #   type = CurrentRayKernel
+  #   variable = J_z
+  #   component = 2
+  # []
+  # [currenty]
+  #   type = LineSourceRayKernel
+  #   variable = J_y
+  #   ray_data_factor_names = 'weight v_y'
+  #   extra_vector_tags = dump_value
+  # []
 []
 
 [Executioner]
   type = Transient
-  num_steps = 3
+  num_steps = 10
   dt = 0.5
 []
 

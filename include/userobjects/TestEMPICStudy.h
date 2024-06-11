@@ -41,5 +41,7 @@ protected:
   const bool _replicated_rays;
   Real _prev_t;
   std::vector<InitialParticleData> _reusable_ray_data;
+  /// The banked rays to be used on the next timestep (restartable)
+  std::vector<std::shared_ptr<Ray>> _continuing_banked_rays;
 
 };
