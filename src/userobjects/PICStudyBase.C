@@ -34,6 +34,8 @@ PICStudyBase::PICStudyBase(const InputParameters & parameters)
   : RayTracingStudy(parameters),
     _banked_rays(
         declareRestartableDataWithContext<std::vector<std::shared_ptr<Ray>>>("_banked_rays", this)),
+    _continuing_rays(declareRestartableDataWithContext<std::vector<std::shared_ptr<Ray>>>(
+        "_continuing_rays", this)),
     _v_x_index(registerRayData("v_x")),
     _v_y_index(registerRayData("v_y")),
     _v_z_index(registerRayData("v_z")),
@@ -61,7 +63,6 @@ PICStudyBase::generateRays()
     reinitializeParticles();
     // Add the rays to be traced
     moveRaysToBuffer(_banked_rays);
-    _banked_rays.clear();
   }
 }
 
@@ -69,6 +70,7 @@ void
 PICStudyBase::reinitializeParticles()
 {
   // Reset each ray
+  // _continuing_rays = std::vector<std::shared_ptr<Ray>>(0);
   for (auto & ray : _banked_rays)
   {
     // Store off the ray's info before we reset it
@@ -96,6 +98,26 @@ PICStudyBase::postExecuteStudy()
   // we are going to be re using the same rays which just took a step so
   // we store them here to reset them in the generateRays method
   _banked_rays = rayBank();
+
+  _banked_rays.erase(
+    std::remove_if(
+      _banked_rays.begin(), _banked_rays.end(),
+      [](std::shared_ptr<Ray> & r)
+      {
+        return std::abs(r->distance() - r->maxDistance()) > std::numeric_limits<float>::epsilon();
+      }
+    ),
+    _banked_rays.end()
+  );
+  // for (auto & ray : _banked_rays)
+  // {
+  //   if (std::abs(ray->distance() - ray->maxDistance()) > std::numeric_limits<float>::epsilon())
+  //     continue;
+
+  //   _continuing_rays.push_back(ray);
+  // }
+
+
 }
 
 void

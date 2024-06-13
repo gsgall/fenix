@@ -32,6 +32,7 @@ public:
 protected:
   /// The banked rays to be used on the next timestep (restartable)
   std::vector<std::shared_ptr<Ray>> & _banked_rays;
+  std::vector<std::shared_ptr<Ray>> & _continuing_rays;
 
   virtual void postExecuteStudy() override;
   /// Ray data for storing velocity components
