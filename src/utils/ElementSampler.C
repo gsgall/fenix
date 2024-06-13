@@ -84,7 +84,8 @@ ElementSampler::sampleElement(const Elem * elem, const unsigned int samples)
     case EDGE2:
     {
       for (const auto i : make_range(samples))
-        reference_points[i](0) = 2.0 * _generator.rand() - 1.0;
+        // reference_points[i](0) = 2.0 * _generator.rand() - 1.0;
+        reference_points[i](0) = 0;
       break;
     }
     // 2D trianglular element where the vertices are at

@@ -98,7 +98,8 @@ PICStudyBase::postExecuteStudy()
   // we are going to be re using the same rays which just took a step so
   // we store them here to reset them in the generateRays method
   _banked_rays = rayBank();
-
+  // remove all of the elements which did not reach the end of their path
+  // this means that they were killed for some reason
   _banked_rays.erase(
     std::remove_if(
       _banked_rays.begin(), _banked_rays.end(),
@@ -109,15 +110,6 @@ PICStudyBase::postExecuteStudy()
     ),
     _banked_rays.end()
   );
-  // for (auto & ray : _banked_rays)
-  // {
-  //   if (std::abs(ray->distance() - ray->maxDistance()) > std::numeric_limits<float>::epsilon())
-  //     continue;
-
-  //   _continuing_rays.push_back(ray);
-  // }
-
-
 }
 
 void
