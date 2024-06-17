@@ -43,6 +43,7 @@ InitializerBase::InitializerBase(const InputParameters & parameters)
 void
 InitializerBase::initialSetup()
 {
+  // Needed because distributions are constructed after UserObjects
   for (const DistributionName & name : _distribution_names)
     _velocity_distributions.push_back(&getDistributionByName(name));
 
