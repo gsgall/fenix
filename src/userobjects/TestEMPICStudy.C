@@ -1,0 +1,203 @@
+//* This file is part of FENIX: Fusion Energy Integrated Multiphys-X,
+//* A multiphysics application for modeling plasma facing components
+//* https://github.com/idaholab/fenix
+//*
+//* FENIX is powered by the MOOSE Framework
+//* https://www.mooseframework.inl.gov
+//*
+//* Licensed under LGPL 2.1, please see LICENSE for details
+//* https://www.gnu.org/licenses/lgpl-2.1.html
+
+#include "TestEMPICStudy.h"
+#include <limits>
+#include "ParticleInitializerBase.h"
+#include "TestSimpleStepper.h"
+#include "ClaimRays.h"
+
+registerMooseObject("FenixApp", TestEMPICStudy);
+InputParameters
+TestEMPICStudy::validParams()
+{
+  auto params = PICStudyBase::validParams();
+  params.addClassDescription("Base class for PIC studies. Provides some of the basic ray data "
+                             "needed for particle tracking."
+                             "Basic logic for resetting rays to be used as particles after the "
+                             "original generation is complete is also provided");
+  params.addRequiredParam<UserObjectName>("initializer",
+                                          "The initializer that will place particles");
+  params.addRequiredParam<UserObjectName>(
+      "simple_stepper",
+      "the stepper for rays that will be retraced for kernel contributions");
+  params.addParam<bool>("replicated_rays", true, "wether or not to have replicated rays");
+  return params;
+}
+
+TestEMPICStudy::TestEMPICStudy(const InputParameters & parameters)
+  : PICStudyBase(parameters),
+    _simple_stepper(getUserObject<TestSimpleStepper>("simple_stepper")),
+    _initializer(getUserObject<ParticleInitializerBase>("initializer")),
+    _replicated_rays(getParam<bool>("replicated_rays")),
+    _prev_t(std::numeric_limits<float>::lowest())
+{
+}
+
+void
+TestEMPICStudy::initializeParticles()
+{
+  auto initial_data = _initializer.getParticleData();
+  // if there are no rays on this processor: do nothing
+  if (initial_data.size() == 0)
+    return;
+
+  std::vector<std::shared_ptr<Ray>> rays(initial_data.size());
+
+  for (unsigned int i = 0; i < initial_data.size(); i++)
+  {
+    if (_replicated_rays)
+    {
+      rays[i] = acquireReplicatedRay();
+    } else {
+      rays[i] = acquireRay();
+    }
+    rays[i]->setStart(initial_data[i].position, initial_data[i].elem);
+    rays[i]->data(_v_x_index) = initial_data[i].velocity(0);
+    rays[i]->data(_v_y_index) = initial_data[i].velocity(1);
+    rays[i]->data(_v_z_index) = initial_data[i].velocity(2);
+    rays[i]->data(_mass_index) = initial_data[i].mass;
+    rays[i]->data(_weight_index) = initial_data[i].weight;
+    rays[i]->data(_charge_index) = initial_data[i].charge;
+    if (!_replicated_rays)
+    {
+      _stepper.setupStep(
+          *rays[i], initial_data[i].velocity, initial_data[i].charge / initial_data[i].mass);
+      setVelocity(*rays[i], initial_data[i].velocity);
+      _reusable_ray_data = initial_data;
+    }
+  }
+
+  if (!_replicated_rays)
+  {
+    moveRaysToBuffer(rays);
+    return;
+  }
+  // Claim the rays
+  std::vector<std::shared_ptr<Ray>> claimed_rays;
+  ClaimRays claim_rays(*this, rays, claimed_rays, false);
+  claim_rays.claim();
+  // lets loop through the claimed rays and set them up for the step
+  // we need to do so because before they are claimed the ray does not
+  // know what element it is in
+  _reusable_ray_data = std::vector<InitialParticleData>(claimed_rays.size());
+  int i = 0;
+  for (auto & ray : claimed_rays)
+  {
+    getVelocity(*ray, _temporary_velocity);
+    _stepper.setupStep(
+        *ray, _temporary_velocity, ray->data()[_charge_index] / ray->data()[_mass_index]);
+    setVelocity(*ray, _temporary_velocity);
+    _reusable_ray_data[i].position = ray->currentPoint();
+    _reusable_ray_data[i].elem = ray->currentElem();
+    _reusable_ray_data[i].velocity(0)  = ray->data(_v_x_index);
+    _reusable_ray_data[i].velocity(1)  = ray->data(_v_y_index);
+    _reusable_ray_data[i].velocity(2)  = ray->data(_v_z_index);
+    _reusable_ray_data[i].mass  = ray->data(_mass_index);
+    _reusable_ray_data[i].weight  = ray->data(_weight_index);
+    _reusable_ray_data[i].charge  = ray->data(_charge_index);
+  }
+  moveRaysToBuffer(claimed_rays);
+}
+
+void
+TestEMPICStudy::reinitializeParticles()
+{
+  // Reset each ray
+  // _reusable_ray_data = std::vector<InitialParticleData>(_banked_rays.size());
+  _continuing_banked_rays.clear();
+  _reusable_ray_data.clear();
+  for (auto & ray : _banked_rays)
+  {
+    // this should catch most of the rays that are killed while tracing
+    if (ray->distance() < ray->maxDistance())
+      continue;
+    // Store off the ray's info before we reset it
+    const auto elem = ray->currentElem();
+    const auto point = ray->currentPoint();
+    const auto distance = ray->distance();
+
+    getVelocity(*ray, _temporary_velocity);
+    // Reset it (this is required to reuse a ray)
+    ray->resetCounters();
+    ray->clearStartingInfo();
+
+    // And set the new starting information
+    ray->setStart(point, elem);
+    _stepper.setupStep(
+        *ray, _temporary_velocity, ray->data()[_charge_index] / ray->data()[_mass_index], distance);
+
+    setVelocity(*ray, _temporary_velocity);
+
+    // storing everything we need to retrace the ray
+    InitialParticleData temp_particle_data;
+    temp_particle_data.elem = elem;
+    temp_particle_data.position = point;
+    temp_particle_data.mass = ray->data(_mass_index);
+    temp_particle_data.weight = ray->data(_weight_index);
+    temp_particle_data.charge = ray->data(_charge_index);
+    temp_particle_data.velocity(0) = ray->data(_v_x_index);
+    temp_particle_data.velocity(1) = ray->data(_v_y_index);
+    temp_particle_data.velocity(2) = ray->data(_v_z_index);
+
+    _reusable_ray_data.push_back(temp_particle_data);
+    _continuing_banked_rays.push_back(ray);
+  }
+  // resizing the container so that
+  // we are not trying trace rays
+}
+
+void
+TestEMPICStudy::generateRays()
+{
+  // We generate rays the first time only, after that we will
+  // pull from the bank and update velocities/max distances
+  if (!_has_generated)
+  {
+    initializeParticles();
+    _has_generated = true;
+    return;
+  }
+
+  if (_prev_t != _t)
+  {
+    reinitializeParticles();
+    // Add the rays to be traced
+    moveRaysToBuffer(_continuing_banked_rays);
+    return;
+  }
+
+  std::vector<std::shared_ptr<Ray>> rays(_reusable_ray_data.size());
+  for (unsigned int i = 0; i < _reusable_ray_data.size(); ++i)
+  {
+    rays[i] = acquireRay();
+    rays[i]->setStart(_reusable_ray_data[i].position, _reusable_ray_data[i].elem);
+    rays[i]->data(_mass_index) = _reusable_ray_data[i].mass;
+    rays[i]->data(_weight_index) = _reusable_ray_data[i].weight;
+    rays[i]->data(_charge_index) = _reusable_ray_data[i].charge;
+    setVelocity(*rays[i], _reusable_ray_data[i].velocity);
+    _simple_stepper.setupStep(*rays[i],
+                              _reusable_ray_data[i].velocity,
+                              rays[i]->data(_charge_index) / rays[i]->data(_mass_index));
+  }
+  moveRaysToBuffer(rays);
+}
+
+void
+TestEMPICStudy::postExecuteStudy()
+{
+  // we are going to be re using the same rays which just took a step so
+  // we store them here to reset them in the generateRays method
+  if (_prev_t != _t)
+  {
+    _banked_rays = rayBank();
+    _prev_t = _t;
+  }
+}
