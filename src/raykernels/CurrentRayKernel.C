@@ -40,7 +40,7 @@ GenericReal<is_ad>
 CurrentRayKernelTempl<is_ad>::computeQpResidual()
 {
   const auto & ray = currentRay();
-  return -ray->data(_charge_index) * ray->data(_weight_index) * _test[_i][_qp] * ray->data(_velocity_index) / ray->maxDistance();
+  return -ray->data(_charge_index) * ray->data(_weight_index) * ray->data(_velocity_index) / ray->maxDistance() * _test[_i][_qp];
 }
 
 template class CurrentRayKernelTempl<false>;
