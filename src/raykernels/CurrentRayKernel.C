@@ -24,6 +24,7 @@ CurrentRayKernelTempl<is_ad>::validParams()
 }
 
 template <bool is_ad>
+
 CurrentRayKernelTempl<is_ad>::CurrentRayKernelTempl(const InputParameters & params)
   : GenericRayKernel<is_ad>(params),
     _component(this->template getParam<unsigned int>("component")),
@@ -40,7 +41,11 @@ GenericReal<is_ad>
 CurrentRayKernelTempl<is_ad>::computeQpResidual()
 {
   const auto & ray = currentRay();
-  return -ray->data(_charge_index) * ray->data(_weight_index) * ray->data(_velocity_index) / ray->maxDistance() * _test[_i][_qp];
+  const auto v = Point(ray->data(this->_study.getRayDataIndex("v_x")),
+                       ray->data(this->_study.getRayDataIndex("v_y")),
+                       ray->data(this->_study.getRayDataIndex("v_z")));
+
+  return - ray->currentElem()->volume() * ray->data(_charge_index) * ray->data(_weight_index) * _test[_i][_qp] / (this->_dt);
 }
 
 template class CurrentRayKernelTempl<false>;

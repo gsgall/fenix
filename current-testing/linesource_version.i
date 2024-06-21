@@ -7,14 +7,21 @@
 
 [Mesh/gmg]
   type = GeneratedMeshGenerator
-  dim = 1
+  dim = 2
   nx = 1
+  ny = 1
   xmin = -1
   xmax = 1
+  ymin = -1
+  ymax = 1
 []
+
+
 
 [Variables]
   [J_x]
+  []
+  [J_y]
   []
 []
 
@@ -38,30 +45,24 @@
     type = ProjectionKernel
     variable = J_x
   []
+  [projection_y]
+    type = ProjectionKernel
+    variable = J_y
+  []
 []
 
 [UserObjects]
-  [initializer]
-    type = PlacedParticleInitializer
-    mass = 1
-    charge = 1
-    weight = 1
-    start_points = '-1 0 0'
-    start_velocities = '2 0 0'
-  []
-
   [velocity_updater]
     type = TestSimpleStepper
   []
 
   [study]
-    type = TestEMPICStudy
-    initializer = initializer
-    velocity_updater = velocity_updater
-    simple_stepper = velocity_updater
+    type = RepeatableRayStudy
+    names = 'steve'
+    start_points = '-1 -1 0'
+    end_points = '1 -1 0'
     always_cache_traces = true
     data_on_cache_traces = true
-    replicated_rays = true
     execute_on = "PRE_KERNELS"
   []
 
@@ -70,17 +71,28 @@
 [RayBCs]
   [Kill]
     type = KillRayBC
-    boundary = 'left right'
+    boundary = 'left right top bottom'
     study = study
   []
 []
 
 [RayKernels]
   [current_x]
-    type = CurrentRayKernel
+    type = LineSourceRayKernel
     variable = J_x
-    component = 0
     extra_vector_tags = dump_value
+  []
+  [current_y]
+    type = LineSourceRayKernel
+    variable = J_y
+  []
+[]
+
+[Postprocessors]
+  [rays]
+    type = RayTracingStudyResult
+    study = study
+    result = 'total_rays_started'
   []
 []
 
@@ -101,10 +113,10 @@
 
 [Outputs]
   exodus = true
+  csv = true
   [rays]
     type = RayTracingExodus
     study = study
-    output_data_names='v_x v_y v_z weight'
     execute_on = 'TIMESTEP_END'
   []
 []

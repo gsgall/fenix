@@ -35,6 +35,7 @@ public:
   std::vector<Point> sampleElement(const Elem * elem, const unsigned int samples);
 
 protected:
+  const FEProblemBase & _problem;
   /// the seed that will be used in addition to the element id when reseeding the generator
   const unsigned int _seed;
   /// the generator that will be used for sampling points

@@ -24,7 +24,8 @@ namespace FENIX
 ElementSampler::ElementSampler(FEProblemBase & problem,
                                const unsigned int seed,
                                MooseRandom & generator)
-  : _seed(seed),
+  : _problem(problem),
+    _seed(seed),
     _generator(generator),
     _arbitrary_qrule(problem.mesh().dimension(), FIRST),
     _fe(FEBase::build(problem.mesh().dimension(), FEType(CONSTANT, MONOMIAL)))
@@ -81,7 +82,7 @@ ElementSampler::sampleElement(const Elem * elem, const unsigned int samples)
   // user selected seed for consistency
   // note that this is only consistent across process counts when element ids are
   // also consistent across processor counts which in general is not the case
-  _generator.seed(elem->id() + _seed);
+  _generator.seed(elem->id() + _seed + uint(_problem.timeStep() - 1));
 
   switch (elem->type())
   {

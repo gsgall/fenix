@@ -13,6 +13,8 @@
   xmax = 1
 []
 
+
+
 [Variables]
   [J_x]
   []
@@ -40,31 +42,17 @@
   []
 []
 
+
 [UserObjects]
-  [initializer]
-    type = PlacedParticleInitializer
-    mass = 1
-    charge = 1
-    weight = 1
-    start_points = '-1 0 0'
-    start_velocities = '2 0 0'
-  []
-
-  [velocity_updater]
-    type = TestSimpleStepper
-  []
-
   [study]
-    type = TestEMPICStudy
-    initializer = initializer
-    velocity_updater = velocity_updater
-    simple_stepper = velocity_updater
+    type = RepeatableRayStudy
+    names = 'steve'
+    start_points = '-1 0 0'
+    end_points = '1 0 0'
     always_cache_traces = true
     data_on_cache_traces = true
-    replicated_rays = true
     execute_on = "PRE_KERNELS"
   []
-
 []
 
 [RayBCs]
@@ -77,10 +65,17 @@
 
 [RayKernels]
   [current_x]
-    type = CurrentRayKernel
+    type = LineSourceRayKernel
     variable = J_x
-    component = 0
     extra_vector_tags = dump_value
+  []
+[]
+
+[Postprocessors]
+  [rays]
+    type = RayTracingStudyResult
+    study = study
+    result = 'total_rays_started'
   []
 []
 
@@ -101,10 +96,10 @@
 
 [Outputs]
   exodus = true
+  csv = true
   [rays]
     type = RayTracingExodus
     study = study
-    output_data_names='v_x v_y v_z weight'
     execute_on = 'TIMESTEP_END'
   []
 []
