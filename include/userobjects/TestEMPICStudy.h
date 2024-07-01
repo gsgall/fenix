@@ -12,6 +12,7 @@
 
 #include "PICStudyBase.h"
 
+
 class ParticleInitializerBase;
 class TestSimpleStepper;
 
@@ -32,6 +33,9 @@ public:
   virtual void reinitializeParticles() override;
 
   virtual void postExecuteStudy() override;
+
+    virtual void reinitSegment(
+      const Elem * elem, const Point & start, const Point & end, const Real length, THREAD_ID tid) override;
 protected:
   /// the velocity updater object which we will hold the rules for how our
   /// particles velocities are updated
@@ -43,5 +47,4 @@ protected:
   std::vector<InitialParticleData> _reusable_ray_data;
   /// The banked rays to be used on the next timestep (restartable)
   std::vector<std::shared_ptr<Ray>> _continuing_banked_rays;
-
 };

@@ -39,8 +39,12 @@ ResidualAccumulator::add(const Elem & elem, const Point & point, const Real & va
   _problem.reinitElemPhys(&elem, {point}, _tid);
   _assembly.modifyArbitraryWeights({1});
 
+  std::cout << std::endl << std::endl;
   for (const auto i : index_range(_test))
+  {
+    std::cout << _test[i][0] * value << std::endl;
     _local_re(i) -= _test[i][0] * value;
+  }
 }
 
 void

@@ -13,6 +13,9 @@
 #include "ParticleInitializerBase.h"
 #include "TestSimpleStepper.h"
 #include "ClaimRays.h"
+#include "RayKernelBase.h"
+#include "TraceRay.h"
+#include "Ray.h"
 
 registerMooseObject("FenixApp", TestEMPICStudy);
 InputParameters
@@ -39,6 +42,12 @@ TestEMPICStudy::TestEMPICStudy(const InputParameters & parameters)
     _replicated_rays(getParam<bool>("replicated_rays")),
     _prev_t(std::numeric_limits<float>::lowest())
 {
+
+  for (const auto elem : *_fe_problem.mesh().getActiveLocalElementRange())
+  {
+    _current_data[elem];
+
+  }
 }
 
 void
@@ -226,5 +235,53 @@ TestEMPICStudy::postExecuteStudy()
       ),
       end(_banked_rays)
     );
+  }
+
+  for (auto d : _current_data)
+  {
+    d.second.points.clear();
+    d.second.values.clear();
+  }
+}
+
+
+void
+TestEMPICStudy::reinitSegment(
+    const Elem * elem, const Point & start, const Point & end, const Real length, THREAD_ID tid)
+{
+  mooseAssert(MooseUtils::absoluteFuzzyEqual((start - end).norm(), length), "Invalid length");
+  mooseAssert(currentlyPropagating(), "Should not call while not propagating");
+
+  _fe_problem.setCurrentSubdomainID(elem, tid);
+
+  // If we have any variables or material properties that are active, we definitely need to reinit
+  bool reinit = _fe_problem.hasActiveElementalMooseVariables(tid) ||
+                _fe_problem.hasActiveMaterialProperties(tid);
+  // If not, make sure that the RayKernels have not requested a reinit (this could happen when a
+  // RayKernel doesn't have variables or materials but still does an integration and needs qps)
+  if (!reinit)
+    for (const RayKernelBase * rk : currentRayKernels(tid))
+      if (rk->needSegmentReinit())
+      {
+        reinit = true;
+        break;
+      }
+
+  if (reinit)
+  {
+    std::vector<Point> points;
+    std::vector<Real> weights;
+    buildSegmentQuadrature(start, end, length, points, weights);
+    auto & segment_data = _current_data[elem];
+
+    segment_data.points.insert(segment_data.points.begin(), points.begin(), points.end());
+    segment_data.values.insert(segment_data.values.begin(), weights.begin(), weights.end());
+
+    std::cout << "Here we go" << std::endl;
+    for (unsigned int qp = 0; qp < points.size(); ++qp)
+    {
+      std::cout << points[qp] << "  " << weights[qp] << std::endl;
+    }
+      std::cout << std::endl << std::endl;
   }
 }

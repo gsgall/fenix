@@ -40,12 +40,7 @@ template <bool is_ad>
 GenericReal<is_ad>
 CurrentRayKernelTempl<is_ad>::computeQpResidual()
 {
-  const auto & ray = currentRay();
-  const auto v = Point(ray->data(this->_study.getRayDataIndex("v_x")),
-                       ray->data(this->_study.getRayDataIndex("v_y")),
-                       ray->data(this->_study.getRayDataIndex("v_z")));
-
-  return - ray->currentElem()->volume() * ray->data(_charge_index) * ray->data(_weight_index) * _test[_i][_qp] / (this->_dt);
+  return 0.0;
 }
 
 template class CurrentRayKernelTempl<false>;

@@ -42,11 +42,11 @@
 
 [Kernels]
   [projection_x]
-    type = ProjectionKernel
+    type = NullKernel
     variable = J_x
   []
   [projection_y]
-    type = ProjectionKernel
+    type = NullKernel
     variable = J_y
   []
 []
@@ -70,8 +70,8 @@
     mass = 1
     charge = 1
     weight = 1
-    start_points = '-1 -1 0'
-    start_velocities = '2 0 0'
+    start_points = '0 -1 0'
+    start_velocities = '0 0 0'
   []
 
   [velocity_updater]
@@ -86,9 +86,15 @@
     always_cache_traces = true
     data_on_cache_traces = true
     replicated_rays = true
-    execute_on = "PRE_KERNELS"
+    execute_on = 'TIMESTEP_BEGIN'
   []
 
+  [accumulator]
+    type = ChargeDensityAccumulator
+    study = study
+    variable = J_x
+    extra_vector_tags = dump_value
+  []
 []
 
 [RayBCs]
@@ -101,15 +107,9 @@
 
 [RayKernels]
   [current_x]
-    type = CurrentRayKernel
-    variable = J_x
-    component = 0
-    extra_vector_tags = dump_value
-  []
-  [current_y]
-    type = CurrentRayKernel
-    variable = J_y
-    component = 1
+    type = NullRayKernel
+    # variable = J_x
+    # component = 0
   []
 []
 
@@ -138,7 +138,12 @@
 
 [Outputs]
   exodus = true
-  csv = true
+  # csv = true
+  [nl]
+    type = Exodus
+    output_nonlinear = true
+  []
+
   [rays]
     type = RayTracingExodus
     study = study

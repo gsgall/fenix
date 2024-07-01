@@ -62,9 +62,15 @@
     always_cache_traces = true
     data_on_cache_traces = true
     replicated_rays = true
-    execute_on = "PRE_KERNELS"
+    execute_on = 'TIMESTEP_BEGIN'
   []
 
+  [accumulator]
+    type = CurrentDensityAccumulator
+    study = study
+    variable = J_x
+    extra_vector_tags = dump_value
+  []
 []
 
 [RayBCs]
@@ -80,7 +86,6 @@
     type = CurrentRayKernel
     variable = J_x
     component = 0
-    extra_vector_tags = dump_value
   []
 []
 
@@ -101,6 +106,11 @@
 
 [Outputs]
   exodus = true
+
+  [nl]
+    type = Exodus
+    output_nonlinear = true
+  []
   [rays]
     type = RayTracingExodus
     study = study

@@ -12,6 +12,12 @@
 
 #include "RayTracingStudy.h"
 
+
+struct CurrentDensityData {
+  std::vector<Point> points;
+  std::vector<Real> values;
+};
+
 class ParticleStepperBase;
 
 class PICStudyBase : public RayTracingStudy
@@ -28,6 +34,11 @@ public:
    * useful for looking at the rays data if needed by another object
    */
   const std::vector<std::shared_ptr<Ray>> & getBankedRays() const;
+
+  const std::unordered_map<const Elem *, CurrentDensityData> & getCurrentDensitydata() const
+  {
+    return _current_data;
+  }
 
 protected:
   /// The banked rays to be used on the next timestep (restartable)
@@ -48,7 +59,6 @@ protected:
   const RayDataIndex _mass_index;
   /// Ray data for storing the type of physical particle a ray represents
   const RayDataIndex _species_index;
-
   /// the velocity updater object which we will hold the rules for how our
   /// particles velocities are updated
   const ParticleStepperBase & _stepper;
@@ -83,4 +93,6 @@ protected:
 
   /// Whether or not we've generated rays yet (restartable)
   bool & _has_generated;
+
+  std::unordered_map<const Elem *, CurrentDensityData> _current_data;
 };
