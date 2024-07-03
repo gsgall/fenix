@@ -42,17 +42,15 @@ CurrentDensityAccumulator::execute()
   {
     std::unique_ptr<FENIX::AccumulatorBase> accumulator =
         std::make_unique<FENIX::ResidualAccumulator>(_fe_problem, this, _var_name, 0);
-
     const auto & data = _study.getCurrentDensitydata();
-
     for (auto & d : data)
     {
       const auto & elem = d.first;
       for (uint i = 0; i < d.second.points.size(); ++i)
       {
-        accumulator->add(*elem, d.second.points[i], d.second.values[i] / _dt);
-
         std::cout << d.second.points[i] << "  " << d.second.values[i] << std::endl;
+        accumulator->add(*elem, d.second.points[i], d.second.values[i]);
+
       }
     }
 

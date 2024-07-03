@@ -27,7 +27,6 @@ protected:
   const unsigned int _component;
   const RayDataIndex _charge_index;
   const RayDataIndex _weight_index;
-  RayDataIndex _velocity_index;
 
   usingGenericRayKernelMembers;
 };

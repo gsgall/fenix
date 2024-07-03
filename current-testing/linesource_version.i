@@ -65,7 +65,6 @@
     data_on_cache_traces = true
     execute_on = "PRE_KERNELS"
   []
-
 []
 
 [RayBCs]

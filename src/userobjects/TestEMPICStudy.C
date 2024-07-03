@@ -16,6 +16,7 @@
 #include "RayKernelBase.h"
 #include "TraceRay.h"
 #include "Ray.h"
+#include "KillParticleBC.h"
 
 registerMooseObject("FenixApp", TestEMPICStudy);
 InputParameters
@@ -46,7 +47,6 @@ TestEMPICStudy::TestEMPICStudy(const InputParameters & parameters)
   for (const auto elem : *_fe_problem.mesh().getActiveLocalElementRange())
   {
     _current_data[elem];
-
   }
 }
 
@@ -217,71 +217,96 @@ TestEMPICStudy::generateRays()
 void
 TestEMPICStudy::postExecuteStudy()
 {
-  // we are going to be re using the same rays which just took a step so
-  // we store them here to reset them in the generateRays method
-  if (_prev_t != _t)
-  {
-    _banked_rays = rayBank();
-    _prev_t = _t;
+  getRayBCs(_bcs, _tid);
+  // _bcs.erase(
+  //   std::remove_if(
+  //     _bcs.begin(), _bcs.end(),
+  //     [](RayBoundaryConditionBase * bc)
+  //     {
+  //       return dynamic_cast<KillParticleBC*>(bc) == nullptr;
+  //     }
+  //   )
+  // );
 
-    _banked_rays.erase(
-      std::remove_if(
-        begin(_banked_rays),
-        end(_banked_rays),
-        [](const std::shared_ptr<Ray> r)
-        {
-          return r->distance() < r->maxDistance();
-        }
-      ),
-      end(_banked_rays)
-    );
+  std::cout << "The BCS" << std::endl;
+  std::cout << _bcs.size() << std::endl;
+  std::unordered_map<RayID, Real> dts;
+
+  for (const auto & bc : _bcs)
+  {
+    auto kill_bc = dynamic_cast<KillParticleBC*> (bc);
+    if (kill_bc == nullptr)
+     continue;
+
+    const auto & bc_dts = kill_bc->getParticleDts();
+    dts.insert(bc_dts.begin(), bc_dts.end());
   }
 
-  for (auto d : _current_data)
+
+  for (const auto & data : dts)
   {
-    d.second.points.clear();
-    d.second.values.clear();
+    std::cout << "Here we are" << std::endl;
+    std::cout << data.first << " " << data.second << std::endl;
   }
+  // // we are going to be re using the same rays which just took a step so
+  // // we store them here to reset them in the generateRays method
+  // if (_prev_t != _t)
+  // {
+  //   _banked_rays = rayBank();
+  //   _prev_t = _t;
+
+  //   _banked_rays.erase(
+  //     std::remove_if(
+  //       begin(_banked_rays),
+  //       end(_banked_rays),
+  //       [](const std::shared_ptr<Ray> r)
+  //       {
+  //         return r->distance() < r->maxDistance();
+  //       }
+  //     ),
+  //     end(_banked_rays)
+  //   );
+  // }
 }
 
 
-void
-TestEMPICStudy::reinitSegment(
-    const Elem * elem, const Point & start, const Point & end, const Real length, THREAD_ID tid)
-{
-  mooseAssert(MooseUtils::absoluteFuzzyEqual((start - end).norm(), length), "Invalid length");
-  mooseAssert(currentlyPropagating(), "Should not call while not propagating");
+// void
+// TestEMPICStudy::reinitSegment(
+//     const Elem * elem, const Point & start, const Point & end, const Real length, THREAD_ID tid)
+// {
+//   mooseAssert(MooseUtils::absoluteFuzzyEqual((start - end).norm(), length), "Invalid length");
+//   mooseAssert(currentlyPropagating(), "Should not call while not propagating");
 
-  _fe_problem.setCurrentSubdomainID(elem, tid);
+//   _fe_problem.setCurrentSubdomainID(elem, tid);
 
-  // If we have any variables or material properties that are active, we definitely need to reinit
-  bool reinit = _fe_problem.hasActiveElementalMooseVariables(tid) ||
-                _fe_problem.hasActiveMaterialProperties(tid);
-  // If not, make sure that the RayKernels have not requested a reinit (this could happen when a
-  // RayKernel doesn't have variables or materials but still does an integration and needs qps)
-  if (!reinit)
-    for (const RayKernelBase * rk : currentRayKernels(tid))
-      if (rk->needSegmentReinit())
-      {
-        reinit = true;
-        break;
-      }
+//   // If we have any variables or material properties that are active, we definitely need to reinit
+//   bool reinit = _fe_problem.hasActiveElementalMooseVariables(tid) ||
+//                 _fe_problem.hasActiveMaterialProperties(tid);
+//   // If not, make sure that the RayKernels have not requested a reinit (this could happen when a
+//   // RayKernel doesn't have variables or materials but still does an integration and needs qps)
+//   if (!reinit)
+//     for (const RayKernelBase * rk : currentRayKernels(tid))
+//       if (rk->needSegmentReinit())
+//       {
+//         reinit = true;
+//         break;
+//       }
 
-  if (reinit)
-  {
-    std::vector<Point> points;
-    std::vector<Real> weights;
-    buildSegmentQuadrature(start, end, length, points, weights);
-    auto & segment_data = _current_data[elem];
+//   if (reinit)
+//   {
+//     std::vector<Point> points;
+//     std::vector<Real> weights;
+//     buildSegmentQuadrature(start, end, length, points, weights);
+//     auto & segment_data = _current_data[elem];
 
-    segment_data.points.insert(segment_data.points.begin(), points.begin(), points.end());
-    segment_data.values.insert(segment_data.values.begin(), weights.begin(), weights.end());
+//     segment_data.points.insert(segment_data.points.begin(), points.begin(), points.end());
+//     segment_data.values.insert(segment_data.values.begin(), weights.begin(), weights.end());
 
-    std::cout << "Here we go" << std::endl;
-    for (unsigned int qp = 0; qp < points.size(); ++qp)
-    {
-      std::cout << points[qp] << "  " << weights[qp] << std::endl;
-    }
-      std::cout << std::endl << std::endl;
-  }
-}
+//     std::cout << "Here we go" << std::endl;
+//     for (unsigned int qp = 0; qp < points.size(); ++qp)
+//     {
+//       std::cout << points[qp] << "  " << weights[qp] << std::endl;
+//     }
+//       std::cout << std::endl << std::endl;
+//   }
+// }

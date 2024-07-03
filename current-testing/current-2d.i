@@ -1,7 +1,7 @@
 [Problem]
   solve = true
   kernel_coverage_check = false
-  extra_tag_vectors = dump_value
+  extra_tag_vectors = 'dump_value test'
 []
 
 
@@ -15,8 +15,6 @@
   ymin = -1
   ymax = 1
 []
-
-
 
 [Variables]
   [J_x]
@@ -42,25 +40,12 @@
 
 [Kernels]
   [projection_x]
-    type = NullKernel
+    type = ProjectionKernel
     variable = J_x
   []
   [projection_y]
     type = NullKernel
     variable = J_y
-  []
-[]
-
-
-[Distributions]
-  [one]
-    type = Constant
-    value = 1.5
-  []
-
-  [zero]
-    type = Constant
-    value = 0.0
   []
 []
 
@@ -70,8 +55,8 @@
     mass = 1
     charge = 1
     weight = 1
-    start_points = '0 -1 0'
-    start_velocities = '0 0 0'
+    start_points = '-1 -1 0'
+    start_velocities = '2 4 0'
   []
 
   [velocity_updater]
@@ -88,28 +73,22 @@
     replicated_rays = true
     execute_on = 'TIMESTEP_BEGIN'
   []
-
-  [accumulator]
-    type = ChargeDensityAccumulator
-    study = study
-    variable = J_x
-    extra_vector_tags = dump_value
-  []
 []
 
 [RayBCs]
   [Kill]
-    type = KillRayBC
-    boundary = 'left right'
+    type = KillParticleBC
+    boundary = 'left right top bottom'
     study = study
   []
 []
 
 [RayKernels]
   [current_x]
-    type = NullRayKernel
-    # variable = J_x
-    # component = 0
+    type = CurrentRayKernel
+    variable = J_x
+    extra_vector_tags = dump_value
+    component = 0
   []
 []
 
@@ -118,6 +97,11 @@
     type = RayTracingStudyResult
     study = study
     result = 'total_rays_started'
+  []
+
+  [current]
+    type = ElementIntegralVariablePostprocessor
+    variable = J_x
   []
 []
 
@@ -132,22 +116,21 @@
   nl_max_its = 15
   l_max_its = 300
   scheme = 'bdf2'
-  automatic_scaling = true
+  # automatic_scaling = true
   compute_scaling_once = false
 []
 
 [Outputs]
   exodus = true
-  # csv = true
-  [nl]
-    type = Exodus
-    output_nonlinear = true
-  []
-
+  csv = true
+  # [nl]
+  #   type = Exodus
+  #   output_nonlinear = true
+  # []
   [rays]
     type = RayTracingExodus
     study = study
-    output_data_names='v_x v_y v_z weight'
+    # output_data_names='v_x v_y v_z weight'
     execute_on = 'TIMESTEP_END'
   []
 []

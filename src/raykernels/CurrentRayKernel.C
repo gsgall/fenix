@@ -31,16 +31,15 @@ CurrentRayKernelTempl<is_ad>::CurrentRayKernelTempl(const InputParameters & para
     _charge_index(this->_study.getRayDataIndex("charge")),
     _weight_index(this->_study.getRayDataIndex("weight"))
 {
-  _velocity_index = _component == 0 ? this->_study.getRayDataIndex("v_x") :
-                    _component == 1 ? this->_study.getRayDataIndex("v_y") :
-                                      this->_study.getRayDataIndex("v_z");
 }
 
 template <bool is_ad>
 GenericReal<is_ad>
 CurrentRayKernelTempl<is_ad>::computeQpResidual()
 {
-  return 0.0;
+  // const auto & ray = currentRay();
+  // return -_test[_i][_qp] * ray->data(_component) / _dt;
+  return 0;
 }
 
 template class CurrentRayKernelTempl<false>;
