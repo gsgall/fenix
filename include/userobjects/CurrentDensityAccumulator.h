@@ -40,11 +40,8 @@ public:
 
 protected:
   /// the name of the variable which are contributing to the residual of
-  const NonlinearVariableName _var_name;
+  const std::vector<NonlinearVariableName> & _var_names;
   /// the PIC study that is tracking all of our particles
   const PICStudyBase & _study;
-  /// the ray data index where the charge of a particle is stored
-  const RayDataIndex _charge_index;
-  /// the ray data index where the weight of the particle is stored
-  const RayDataIndex _weight_index;
+  const uint _mesh_dimension;
 };

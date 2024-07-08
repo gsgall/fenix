@@ -15,6 +15,7 @@
 
 class ParticleInitializerBase;
 class TestSimpleStepper;
+class KillParticleBC;
 
 class TestEMPICStudy : public PICStudyBase
 {
@@ -28,21 +29,15 @@ public:
    * useful for looking at the rays data if needed by another object
    */
   const std::vector<std::shared_ptr<Ray>> & getBankedRays() const;
-  virtual void generateRays() override;
   virtual void initializeParticles() override;
-  virtual void reinitializeParticles() override;
+  virtual void initialSetup() override;
+  virtual void reinitSegment(
+    const Elem * elem, const Point & start, const Point & end, const Real length, THREAD_ID tid) override;
 
   virtual void postExecuteStudy() override;
 protected:
-  /// the velocity updater object which we will hold the rules for how our
-  /// particles velocities are updated
-  const TestSimpleStepper & _simple_stepper;
   /// the object that will supply initial data needed for rays
   const ParticleInitializerBase & _initializer;
   const bool _replicated_rays;
-  Real _prev_t;
-  std::vector<InitialParticleData> _reusable_ray_data;
-  /// The banked rays to be used on the next timestep (restartable)
-  std::vector<std::shared_ptr<Ray>> _continuing_banked_rays;
-  std::vector<RayBoundaryConditionBase *> _bcs;
+  std::vector<KillParticleBC *> _bcs;
 };

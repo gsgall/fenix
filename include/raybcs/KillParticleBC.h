@@ -22,7 +22,12 @@ public:
 
   virtual void onBoundary(const unsigned int num_applying) override;
 
-  std::unordered_map<RayID, Real> & getParticleDts() {return _local_dt;}
+  std::unordered_map<RayID, Real> & getLocalParticleDts() {return _local_dt;}
+  std::unordered_map<RayID, Real> & getTransmittableParticleDts() {
+    return _transmittable_local_dt;
+  }
+
 protected:
   std::unordered_map<RayID, Real> _local_dt;
+  std::unordered_map<RayID, Real> _transmittable_local_dt;
 };

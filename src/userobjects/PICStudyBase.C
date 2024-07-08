@@ -61,7 +61,7 @@ PICStudyBase::generateRays()
     reinitializeParticles();
     // Add the rays to be traced
     moveRaysToBuffer(_banked_rays);
-    _banked_rays.clear();
+    // _banked_rays.clear();
   }
 }
 

@@ -8,8 +8,8 @@
 [Mesh/gmg]
   type = GeneratedMeshGenerator
   dim = 2
-  nx = 1
-  ny = 1
+  nx = 2
+  ny = 2
   xmin = -1
   xmax = 1
   ymin = -1
@@ -44,7 +44,7 @@
     variable = J_x
   []
   [projection_y]
-    type = NullKernel
+    type = ProjectionKernel
     variable = J_y
   []
 []
@@ -67,11 +67,16 @@
     type = TestEMPICStudy
     initializer = initializer
     velocity_updater = velocity_updater
-    simple_stepper = velocity_updater
     always_cache_traces = true
     data_on_cache_traces = true
     replicated_rays = true
     execute_on = 'TIMESTEP_BEGIN'
+  []
+
+  [current_accumulator]
+    type = CurrentDensityAccumulator
+    study = study
+    variables = 'J_x J_y'
   []
 []
 
@@ -84,11 +89,13 @@
 []
 
 [RayKernels]
-  [current_x]
-    type = CurrentRayKernel
+  # [null]
+  #   type = NullRayKernel
+  # []
+  [test]
+    type = ADLineSourceRayKernel
     variable = J_x
-    extra_vector_tags = dump_value
-    component = 0
+    value = 0
   []
 []
 
@@ -99,9 +106,13 @@
     result = 'total_rays_started'
   []
 
-  [current]
+  [current_x]
     type = ElementIntegralVariablePostprocessor
     variable = J_x
+  []
+  [current_y]
+    type = ElementIntegralVariablePostprocessor
+    variable = J_y
   []
 []
 

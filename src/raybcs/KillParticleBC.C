@@ -27,8 +27,12 @@ KillParticleBC::onBoundary(const unsigned int num_applying)
   KillRayBC::onBoundary(num_applying);
 
   const auto & ray = currentRay();
-  if (ray->processorCrossings() > 0)
+  if (ray->processorCrossings() == 0)
   {
-    _local_dt[currentRay()->id()] = (ray->distance() / ray->maxDistance()) * _dt;
+    _local_dt[ray->id()] = (ray->distance() / ray->maxDistance()) * _dt;
+    return;
   }
+
+  _transmittable_local_dt[ray->id()] = (ray->distance() / ray->maxDistance()) * _dt;
 }
+

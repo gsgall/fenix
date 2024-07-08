@@ -21,18 +21,19 @@ CurrentDensityAccumulator::validParams()
   params.set<ExecFlagEnum>("execute_on") = EXEC_PRE_KERNELS;
   // making this input parameter private so the user cannot use the object incorrectly
   params.suppressParameter<ExecFlagEnum>("execute_on");
-  params.addRequiredParam<NonlinearVariableName>("variable",
-                                                 "The variable to contribute to the residual of");
+  params.addRequiredParam<std::vector<NonlinearVariableName>>("variables",
+                                                 "The variables to contribute to the residual of one for each dimension of the problem");
   return params;
 }
 
 CurrentDensityAccumulator::CurrentDensityAccumulator(const InputParameters & params)
   : GeneralUserObject(params),
-    _var_name(getParam<NonlinearVariableName>("variable")),
+    _var_names(getParam<std::vector<NonlinearVariableName>>("variables")),
     _study(getUserObject<PICStudyBase>("study")),
-    _charge_index(_study.getRayDataIndex("charge")),
-    _weight_index(_study.getRayDataIndex("weight"))
+    _mesh_dimension(_fe_problem.mesh().dimension())
 {
+  if (_var_names.size() != _mesh_dimension)
+    paramError("variables", "You must have one component of current for each dimension");
 }
 
 void
@@ -40,20 +41,33 @@ CurrentDensityAccumulator::execute()
 {
   if (_fe_problem.currentlyComputingResidual())
   {
-    std::unique_ptr<FENIX::AccumulatorBase> accumulator =
-        std::make_unique<FENIX::ResidualAccumulator>(_fe_problem, this, _var_name, 0);
-    const auto & data = _study.getCurrentDensitydata();
-    for (auto & d : data)
-    {
-      const auto & elem = d.first;
-      for (uint i = 0; i < d.second.points.size(); ++i)
-      {
-        std::cout << d.second.points[i] << "  " << d.second.values[i] << std::endl;
-        accumulator->add(*elem, d.second.points[i], d.second.values[i]);
 
+    std::vector<std::unique_ptr<FENIX::AccumulatorBase>> accumulators;
+    for (uint i = 0; i < _mesh_dimension; ++i)
+    {
+      accumulators.push_back(std::make_unique<FENIX::ResidualAccumulator>(_fe_problem, this, _var_names[i], 0));
+    }
+
+    const auto & current_density_data = _study.getCurrentDensitydata();
+    const auto & dt_data = _study.getTimeTakenData();
+    for (const auto & elemental_data : current_density_data)
+    {
+      const auto & elem = elemental_data.first;
+
+      for (const auto & ray_data : elemental_data.second)
+      {
+        auto it = dt_data.find(ray_data.first);
+        Real dt = (it == dt_data.end()) ? _dt : it->second;
+
+        for (const auto & data : ray_data.second)
+        {
+          for (uint i = 0; i < _mesh_dimension; ++i)
+            accumulators[i]->add(*elem, data.point, data.values(i) / dt);
+        }
       }
     }
 
-    accumulator->finalize();
+    for (auto & accumulator : accumulators)
+      accumulator->finalize();
   }
 }

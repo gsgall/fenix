@@ -14,8 +14,8 @@
 
 
 struct CurrentDensityData {
-  std::vector<Point> points;
-  std::vector<Real> values;
+  Point point;
+  Point values;
 };
 
 class ParticleStepperBase;
@@ -35,9 +35,15 @@ public:
    */
   const std::vector<std::shared_ptr<Ray>> & getBankedRays() const;
 
-  const std::unordered_map<const Elem *, CurrentDensityData> & getCurrentDensitydata() const
+  const std::unordered_map<const Elem *, std::unordered_map<RayID, std::vector<CurrentDensityData>>> &
+  getCurrentDensitydata() const
   {
-    return _current_data;
+    return _current_density_data;
+  }
+
+  const std::unordered_map<RayID, Real> & getTimeTakenData() const
+  {
+    return _dts;
   }
 
 protected:
@@ -62,7 +68,8 @@ protected:
   /// the velocity updater object which we will hold the rules for how our
   /// particles velocities are updated
   const ParticleStepperBase & _stepper;
-
+  std::unordered_map<const Elem *, std::unordered_map<RayID, std::vector<CurrentDensityData>>> _current_density_data;
+  std::unordered_map<RayID, Real> _dts;
   /// temporary variable used when resetting rays
   Point _temporary_velocity;
   /**
@@ -93,6 +100,4 @@ protected:
 
   /// Whether or not we've generated rays yet (restartable)
   bool & _has_generated;
-
-  std::unordered_map<const Elem *, CurrentDensityData> _current_data;
 };
