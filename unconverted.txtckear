@@ -1,0 +1,130 @@
+
+
+   _____   _____   _   _   ___  __  __    
+  |  ___/ | ____\ | \ | | |_ _| \ \/ / 
+  | |_    |  _/   |  \| |  | |   \  /   
+  |  _/   | |___  | |\  |  | |   /  \   
+  |_|     |_____/ |_| \_| |___| /_/\_\ 
+
+
+FENIX: Fusion ENergy Integrated multiphysi-X 
+
+
+Copyright 2024, Battelle Energy Alliance, LLC 
+ALL RIGHTS RESERVED 
+
+
+NOTICE: These data were produced by BATTELLE ENERGY ALLIANCE, LLC under Contract 
+No. DE-AC07-05ID14517 with the Department of Energy. For ten(10) years from 
+June 13, 2024, the Government is granted for itself and others acting on its behalf 
+a nonexclusive, paid-up, irrevocable worldwide license in this data to reproduce, 
+prepare derivative works, and perform publicly and display publicly, by or on 
+behalf of the Government. There is provision for the possible extension of the 
+term of this license. Subsequent to that period or any extension granted, the 
+Government is granted for itself and others acting on its behalf a nonexclusive, 
+paid-up, irrevocable worldwide license in this data to reproduce, prepare 
+derivative works, distribute copies to the public, perform publicly and display 
+publicly, and to permit others to do so. The specific term of the license can be 
+identified by inquiry made to Contractor or DOE. NEITHER THE UNITED STATES NOR 
+THE UNITED STATES DEPARTMENT OF ENERGY, NOR ANY OF THEIR EMPLOYEES, MAKES ANY 
+WARRANTY, EXPRESS OR IMPLIED, OR ASSUMES ANY LEGAL LIABILITY OR RESPONSIBILITY 
+FOR THE ACCURACY, COMPLETENESS, OR USEFULNESS OF ANY DATA, APPARATUS, PRODUCT, 
+OR PROCESS DISCLOSED, OR REPRESENTS THAT ITS USE WOULD NOT INFRINGE PRIVATELY 
+OWNED RIGHTS. 
+
+
+
+[36mElementOrderConversionGenerator 'element_convert': [39m Mesh Information:
+[36mElementOrderConversionGenerator 'element_convert': [39m  elem_dimensions()={3}
+[36mElementOrderConversionGenerator 'element_convert': [39m  spatial_dimension()=3
+[36mElementOrderConversionGenerator 'element_convert': [39m  n_nodes()=14909
+[36mElementOrderConversionGenerator 'element_convert': [39m    n_local_nodes()=1735
+[36mElementOrderConversionGenerator 'element_convert': [39m  n_elem()=4140
+[36mElementOrderConversionGenerator 'element_convert': [39m    n_local_elem()=402
+[36mElementOrderConversionGenerator 'element_convert': [39m    n_active_elem()=4140
+[36mElementOrderConversionGenerator 'element_convert': [39m  n_subdomains()=1
+[36mElementOrderConversionGenerator 'element_convert': [39m  n_elemsets()=0
+[36mElementOrderConversionGenerator 'element_convert': [39m  n_partitions()=10
+[36mElementOrderConversionGenerator 'element_convert': [39m  n_processors()=10
+[36mElementOrderConversionGenerator 'element_convert': [39m  n_threads()=1
+[36mElementOrderConversionGenerator 'element_convert': [39m  processor_id()=0
+[36mElementOrderConversionGenerator 'element_convert': [39m  is_prepared()=false
+[36mElementOrderConversionGenerator 'element_convert': [39m  is_replicated()=true
+[36mElementOrderConversionGenerator 'element_convert': [39m
+[36mElementOrderConversionGenerator 'element_convert': [39m Mesh Bounding Box:
+[36mElementOrderConversionGenerator 'element_convert': [39m  Minimum: (x,y,z)=(-1.12254,   -1.119, -1.11767)
+[36mElementOrderConversionGenerator 'element_convert': [39m  Maximum: (x,y,z)=( 1.12768,  1.13131,   1.1344)
+[36mElementOrderConversionGenerator 'element_convert': [39m  Delta:   (x,y,z)=( 2.25022,  2.25031,  2.25206)
+[36mElementOrderConversionGenerator 'element_convert': [39m
+[36mElementOrderConversionGenerator 'element_convert': [39m Mesh Element Type(s):
+[36mElementOrderConversionGenerator 'element_convert': [39m  TET14
+[36mElementOrderConversionGenerator 'element_convert': [39m
+[36mElementOrderConversionGenerator 'element_convert': [39m Mesh Nodesets:
+[36mElementOrderConversionGenerator 'element_convert': [39m  Nodeset 1, 108 nodes
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box minimum: (x,y,z)=(-0.988831, -0.997204,       -1)
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box maximum: (x,y,z)=(       1, 0.997204,       -1)
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box delta: (x,y,z)=( 1.98883,  1.99441,        0)
+[36mElementOrderConversionGenerator 'element_convert': [39m
+[36mElementOrderConversionGenerator 'element_convert': [39m Mesh Sidesets:
+[36mElementOrderConversionGenerator 'element_convert': [39m  Sideset 1 (boundary), 193 sides (TRI7), 193 elems (TET14), 601 nodes
+[36mElementOrderConversionGenerator 'element_convert': [39m   Side volume: 3.09493
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box minimum: (x,y,z)=(-1.05857, -1.05384,       -1)
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box maximum: (x,y,z)=(  1.0518,  1.04995,       -1)
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box delta: (x,y,z)=( 2.11037,   2.1038,        0)
+[36mElementOrderConversionGenerator 'element_convert': [39m
+[36mElementOrderConversionGenerator 'element_convert': [39m Mesh Edgesets:
+[36mElementOrderConversionGenerator 'element_convert': [39m  None
+[36mElementOrderConversionGenerator 'element_convert': [39m
+[36mElementOrderConversionGenerator 'element_convert': [39m Mesh Subdomains:
+[36mElementOrderConversionGenerator 'element_convert': [39m  Subdomain 2 (vacuum): 4140 elems (TET14, 4140 active), 14909 active nodes
+[36mElementOrderConversionGenerator 'element_convert': [39m   Volume: 6.21559
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box minimum: (x,y,z)=(-1.12254,   -1.119, -1.11767)
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box maximum: (x,y,z)=( 1.12768,  1.13131,   1.1344)
+[36mElementOrderConversionGenerator 'element_convert': [39m   Bounding box delta: (x,y,z)=( 2.25022,  2.25031,  2.25206)
+[36mElementOrderConversionGenerator 'element_convert': [39m  Global mesh volume = 6.21559
+Framework Information:
+MOOSE Version:           git commit fd18d88b46 on 2024-07-08
+LibMesh Version:         
+PETSc Version:           3.20.3
+SLEPc Version:           3.20.1
+Current Time:            Tue Jul  9 16:20:39 2024
+Executable Timestamp:    Tue Jul  9 13:14:31 2024
+
+Checkpoint:
+  Wall Time Interval:      Every 3600.000000 s
+  User Checkpoint:         Disabled
+  # Checkpoints Kept:      2
+  Execute On:              TIMESTEP_END 
+
+Parallelism:
+  Num Processors:          10
+  Num Threads:             1
+
+Mesh: 
+  Parallel Type:           replicated
+  Mesh Dimension:          3
+  Spatial Dimension:       3
+  Nodes:                   
+    Total:                 14909
+    Local:                 1735
+    Min/Max/Avg:           1247/1735/1490
+  Elems:                   
+    Total:                 4140
+    Local:                 402
+    Min/Max/Avg:           402/424/414
+  Num Subdomains:          1
+  Num Partitions:          10
+  Partitioner:             metis
+
+Auxiliary System:
+  Num DOFs:                2625
+  Num Local DOFs:          423
+  Variables:               "J" 
+  Finite Element Types:    "LAGRANGE_VEC" 
+  Approximation Orders:    "FIRST" 
+
+Execution Information:
+  Executioner:             Steady
+  Solver Mode:             Preconditioned JFNK
+
+[32m Solve Skipped![39m
