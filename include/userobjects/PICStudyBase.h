@@ -34,6 +34,8 @@ public:
    */
   const std::vector<std::shared_ptr<Ray>> & getBankedRays() const;
 
+  virtual void execute() override;
+
 protected:
   /// The banked rays to be used on the next timestep (restartable)
   std::vector<std::shared_ptr<Ray>> & _banked_rays;
@@ -60,6 +62,11 @@ protected:
 
   /// temporary variable used when resetting rays
   Point _temporary_velocity;
+
+  const TagName & _residual_tag_name;
+
+  bool _has_traced;
+
   /**
    * Method for getting a rays velocity as a vector
    * Each component is retrieved from ray data and given

@@ -15,6 +15,8 @@
 
 #include "PICStudyBase.h"
 #include "ParticleStepperBase.h"
+#include "NonlinearSystemBase.h"
+#include "SystemBase.h"
 
 InputParameters
 PICStudyBase::validParams()
@@ -31,6 +33,9 @@ PICStudyBase::validParams()
   // We're not going to use registration because we don't care to name our rays because
   // we will have a lot of them
   params.set<bool>("_use_ray_registration") = false;
+  params.set<bool>("allow_other_flags_with_prekernels") = true;
+  params.addParam<TagName>("residual_vector_tag","",
+                           "the vector tag for the residual tag you will accumulate into");
 
   return params;
 }
@@ -47,6 +52,8 @@ PICStudyBase::PICStudyBase(const InputParameters & parameters)
     _mass_index(registerRayData("mass")),
     _species_index(registerRayData("species")),
     _stepper(getUserObject<ParticleStepperBase>("velocity_updater")),
+    _residual_tag_name(getParam<TagName>("residual_vector_tag")),
+    _has_traced(false),
     _has_generated(declareRestartableData<bool>("has_generated", false))
 {
 }
@@ -94,6 +101,37 @@ PICStudyBase::reinitializeParticles()
     setVelocity(*ray, _temporary_velocity);
   }
 }
+
+
+
+void
+PICStudyBase::execute()
+{
+  if (_current_execute_flag == EXEC_TIMESTEP_BEGIN)
+  {
+    _has_traced = false;
+    return;
+  }
+
+  if (_fe_problem.currentlyComputingJacobian())
+    return;
+
+  const auto contribution_tag_id = _fe_problem.getVectorTagID(_residual_tag_name);
+  auto & nl = _fe_problem.getNonlinearSystemBase(_sys.number());
+  auto & contribution_vec = nl.getVector(contribution_tag_id);
+  if (!_has_traced)
+  {
+    contribution_vec.zero();
+    RayTracingStudy::execute();
+    contribution_vec.close();
+    _has_traced = true;
+  }
+
+  auto & residual_vec = nl.getVector(nl.residualVectorTag());
+  residual_vec.close();
+  residual_vec += contribution_vec;
+}
+
 
 void
 PICStudyBase::postExecuteStudy()
