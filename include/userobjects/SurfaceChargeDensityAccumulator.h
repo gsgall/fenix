@@ -15,16 +15,19 @@
 
 #pragma once
 #include "ChargeDensityAccumulatorBase.h"
-// including ray for RayDataIndex
-#include "Ray.h"
-class PICStudyBase;
 
-class ChargeDensityAccumulator : public ChargeDensityAccumulatorBase
+namespace FENIX
+{
+class AccumulatorBase;
+}
+
+class SurfaceChargeRayBC;
+class SurfaceChargeDensityAccumulator : public ChargeDensityAccumulatorBase
 {
 public:
   static InputParameters validParams();
 
-  ChargeDensityAccumulator(const InputParameters & params);
+  SurfaceChargeDensityAccumulator(const InputParameters & params);
 
   /**
    * The execute method will get all of the particles that are being tracked
@@ -34,5 +37,11 @@ public:
    * and the finite element basis functions
    */
   virtual void execute() override;
+  virtual void initialSetup() override;
+
+protected:
+
+  std::vector<SurfaceChargeRayBC *> _surface_charge_bcs;
+  std::unique_ptr<FENIX::AccumulatorBase> _accumulator;
 
 };

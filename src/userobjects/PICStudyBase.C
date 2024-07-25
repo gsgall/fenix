@@ -151,6 +151,17 @@ PICStudyBase::postExecuteStudy()
   // we are going to be re using the same rays which just took a step so
   // we store them here to reset them in the generateRays method
   _banked_rays = rayBank();
+
+  _banked_rays.erase(
+    std::remove_if(
+      _banked_rays.begin(),
+      _banked_rays.end(),
+      [](const std::shared_ptr<Ray> & ray) {
+        return ray->distance() != ray->maxDistance();
+      }
+    )
+  );
+
 }
 
 void
