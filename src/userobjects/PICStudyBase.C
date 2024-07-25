@@ -34,8 +34,10 @@ PICStudyBase::validParams()
   // we will have a lot of them
   params.set<bool>("_use_ray_registration") = false;
   params.set<bool>("allow_other_flags_with_prekernels") = true;
+  params.addParam<bool>("calculate_current_density", false, "Whether or not you want to setup the study to be able to perform current density calculations");
   params.addParam<TagName>("residual_vector_tag","",
                            "the vector tag for the residual tag you will accumulate into");
+
 
   return params;
 }
@@ -53,7 +55,8 @@ PICStudyBase::PICStudyBase(const InputParameters & parameters)
     _species_index(registerRayData("species")),
     _stepper(getUserObject<ParticleStepperBase>("velocity_updater")),
     _residual_tag_name(getParam<TagName>("residual_vector_tag")),
-    _has_traced(false),
+    _has_traced(declareRestartableData<bool>("has_traced", false)),
+    _calculate_current_density(declareRestartableData<bool>("calculate_current_density", getParam<bool>("calculate_current_density"))),
     _has_generated(declareRestartableData<bool>("has_generated", false))
 {
 }
@@ -107,6 +110,11 @@ PICStudyBase::reinitializeParticles()
 void
 PICStudyBase::execute()
 {
+  if (!_calculate_current_density)
+  {
+    RayTracingStudy::execute();
+    return;
+  }
   if (_current_execute_flag == EXEC_TIMESTEP_BEGIN)
   {
     _has_traced = false;

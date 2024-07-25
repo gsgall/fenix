@@ -65,7 +65,8 @@ protected:
 
   const TagName & _residual_tag_name;
 
-  bool _has_traced;
+  bool & _has_traced;
+  bool & _calculate_current_density;
 
   /**
    * Method for getting a rays velocity as a vector
