@@ -12,7 +12,7 @@
 []
 
 [Problem]
-  # solve = false
+  solve = false
 []
 
 [Debug]
@@ -92,7 +92,7 @@
 
   [R]
     type = ConstantFunction
-    value = 1.25
+    value = 0.25
   []
 
   [I]
@@ -118,7 +118,7 @@
     type = ParsedVectorFunction
     symbol_names = 'r R mu_0 J'
     symbol_values = 'r R mu_0 J'
-    expression_z = 'mu_0 * J'
+    expression_z = 'if (r < R, mu_0 * J, 0)'
   []
 
   [B_inner_mag]
