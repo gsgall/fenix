@@ -157,11 +157,11 @@ PICStudyBase::postExecuteStudy()
       _banked_rays.begin(),
       _banked_rays.end(),
       [](const std::shared_ptr<Ray> & ray) {
-        return ray->distance() != ray->maxDistance();
+        return ray->distance() != ray->maxDistance() && ray->maxDistance() > 0;
       }
-    )
+    ),
+    _banked_rays.end()
   );
-
 }
 
 void

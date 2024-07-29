@@ -30,8 +30,7 @@ SurfaceChargeDensityAccumulator::validParams()
 }
 
 SurfaceChargeDensityAccumulator::SurfaceChargeDensityAccumulator(const InputParameters & params)
-  : ChargeDensityAccumulatorBase(params),
-  _accumulator(std::make_unique<FENIX::ResidualAccumulator>(_fe_problem, this, _var_name, 0))
+  : ChargeDensityAccumulatorBase(params)
 {
 }
 
@@ -55,19 +54,26 @@ SurfaceChargeDensityAccumulator::initialSetup()
 void
 SurfaceChargeDensityAccumulator::execute()
 {
-  for (auto & bc : _surface_charge_bcs)
+
+  if (_fe_problem.currentlyComputingResidual())
   {
-    auto all_surface_charge_data = bc->surfaceChargeData();
+    std::unique_ptr<FENIX::AccumulatorBase> accumulator =
+        std::make_unique<FENIX::ResidualAccumulator>(_fe_problem, this, _var_name, 0);
 
-    for (const auto & elemental_surface_charge_data : all_surface_charge_data)
+    for (auto & bc : _surface_charge_bcs)
     {
-      const auto elem = elemental_surface_charge_data.first;
+      auto all_surface_charge_data = bc->surfaceChargeData();
 
-      for (const auto & data : elemental_surface_charge_data.second)
+      for (const auto & elemental_surface_charge_data : all_surface_charge_data)
       {
-        _accumulator->add(*elem, data.point, data.value);
+        const auto elem = elemental_surface_charge_data.first;
+
+        for (const auto & data : elemental_surface_charge_data.second)
+        {
+          accumulator->add(*elem, data.point, data.value);
+        }
       }
     }
+    accumulator->finalize();
   }
-  _accumulator->finalize();
 }

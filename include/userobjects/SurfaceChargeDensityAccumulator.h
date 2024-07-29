@@ -42,6 +42,6 @@ public:
 protected:
 
   std::vector<SurfaceChargeRayBC *> _surface_charge_bcs;
-  std::unique_ptr<FENIX::AccumulatorBase> _accumulator;
+  // std::unique_ptr<FENIX::AccumulatorBase> _accumulator;
 
 };
