@@ -34,8 +34,7 @@ PICStudyBase::validParams()
   // we will have a lot of them
   params.set<bool>("_use_ray_registration") = false;
   params.set<bool>("allow_other_flags_with_prekernels") = true;
-  params.addParam<bool>("calculate_current_density", false, "Whether or not you want to setup the study to be able to perform current density calculations");
-  params.addParam<TagName>("residual_vector_tag","",
+  params.addParam<TagName>("current_density_residual_vector_tag","",
                            "the vector tag for the residual tag you will accumulate into");
 
 
@@ -54,9 +53,9 @@ PICStudyBase::PICStudyBase(const InputParameters & parameters)
     _mass_index(registerRayData("mass")),
     _species_index(registerRayData("species")),
     _stepper(getUserObject<ParticleStepperBase>("velocity_updater")),
-    _residual_tag_name(getParam<TagName>("residual_vector_tag")),
+    _residual_tag_name(getParam<TagName>("current_density_residual_vector_tag")),
     _has_traced(declareRestartableData<bool>("has_traced", false)),
-    _calculate_current_density(declareRestartableData<bool>("calculate_current_density", getParam<bool>("calculate_current_density"))),
+    _calculate_current_density(declareRestartableData<bool>("calculate_current_density", _residual_tag_name.length() > 0)),
     _has_generated(declareRestartableData<bool>("has_generated", false))
 {
 }
@@ -151,13 +150,15 @@ PICStudyBase::postExecuteStudy()
   // we are going to be re using the same rays which just took a step so
   // we store them here to reset them in the generateRays method
   _banked_rays = rayBank();
-
   _banked_rays.erase(
     std::remove_if(
       _banked_rays.begin(),
       _banked_rays.end(),
       [](const std::shared_ptr<Ray> & ray) {
-        return ray->distance() != ray->maxDistance() && ray->maxDistance() > 0;
+        if (ray->stationary())
+          return false;
+
+        return std::abs(ray->distance() - ray->maxDistance()) / ray->maxDistance() > 1e-6 ;
       }
     ),
     _banked_rays.end()

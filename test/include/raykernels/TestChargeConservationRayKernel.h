@@ -12,10 +12,10 @@
 #include "GenericRayKernel.h"
 
 template <bool is_ad>
-class ChargeConservationRayKernelTempl : public GenericRayKernel<is_ad>
+class TestChargeConservationRayKernelTempl : public GenericRayKernel<is_ad>
 {
 public:
-  ChargeConservationRayKernelTempl(const InputParameters & params);
+  TestChargeConservationRayKernelTempl(const InputParameters & params);
 
   static InputParameters validParams();
 
@@ -29,5 +29,5 @@ protected:
   const VariableTestGradient & _grad_test;
 };
 
-typedef ChargeConservationRayKernelTempl<false> ChargeConservationRayKernel;
-typedef ChargeConservationRayKernelTempl<true> ADChargeConservationRayKernel;
+typedef TestChargeConservationRayKernelTempl<false> TestChargeConservationRayKernel;
+typedef TestChargeConservationRayKernelTempl<true> TestADChargeConservationRayKernel;

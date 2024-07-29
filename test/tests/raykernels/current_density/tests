@@ -1,0 +1,10 @@
+[Tests]
+  requirement = 'The system shall be able to calculate current density source terms from rays'
+  [charge_conservation]
+    type = 'Exodiff'
+    input = 'current.i'
+    exodiff = 'current_out.e'
+    allow_test_objects = true
+    detail = 'and ensure that conservation of charge is satisfied'
+  []
+[]

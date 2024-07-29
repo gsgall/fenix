@@ -38,17 +38,23 @@ void
 SurfaceChargeDensityAccumulator::initialSetup()
 {
   ChargeDensityAccumulatorBase::initialSetup();
-  std::vector<RayBoundaryConditionBase *> temporary_bcs;
 
+  _study.getRayBCs(_surface_charge_bcs, _tid);
 
-  _study.getRayBCs(temporary_bcs, _tid);
+  _surface_charge_bcs.erase(
+    std::remove_if(
+      _surface_charge_bcs.begin(),
+      _surface_charge_bcs.end(),
+      [](RayBoundaryConditionBase * bc)
+      {
+        return dynamic_cast<SurfaceChargeRayBC *>(bc) == nullptr;
+      }
+    ),
+    _surface_charge_bcs.end()
+  );
 
-  for (auto & bc : temporary_bcs)
-  {
-    auto cast = dynamic_cast<SurfaceChargeRayBC *>(bc);
-    if (cast != nullptr)
-      _surface_charge_bcs.push_back(cast);
-  }
+  if (_surface_charge_bcs.size() == 0)
+    mooseError("At least one RayBC must be of type 'SurfaceChargeRayBC' for the 'SurfaceChargeAccumulator' to function properly");
 }
 
 void

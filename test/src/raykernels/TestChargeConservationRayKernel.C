@@ -7,14 +7,14 @@
 //* Licensed under LGPL 2.1, please see LICENSE for details
 //* https://www.gnu.org/licenses/lgpl-2.1.html
 
-#include "ChargeConservationRayKernel.h"
+#include "TestChargeConservationRayKernel.h"
 
-registerMooseObject("FenixApp", ChargeConservationRayKernel);
-registerMooseObject("FenixApp", ADChargeConservationRayKernel);
+registerMooseObject("FenixTestApp", TestChargeConservationRayKernel);
+registerMooseObject("FenixTestApp", TestADChargeConservationRayKernel);
 
 template <bool is_ad>
 InputParameters
-ChargeConservationRayKernelTempl<is_ad>::validParams()
+TestChargeConservationRayKernelTempl<is_ad>::validParams()
 {
   InputParameters params = GenericRayKernel<is_ad>::validParams();
 
@@ -24,7 +24,7 @@ ChargeConservationRayKernelTempl<is_ad>::validParams()
 }
 
 template <bool is_ad>
-ChargeConservationRayKernelTempl<is_ad>::ChargeConservationRayKernelTempl(const InputParameters & params)
+TestChargeConservationRayKernelTempl<is_ad>::TestChargeConservationRayKernelTempl(const InputParameters & params)
   : GenericRayKernel<is_ad>(params),
     _charge_index(this->_study.getRayDataIndex("charge")),
     _weight_index(this->_study.getRayDataIndex("weight")),
@@ -32,13 +32,13 @@ ChargeConservationRayKernelTempl<is_ad>::ChargeConservationRayKernelTempl(const 
 {
 }
 
-template <bool is_ad>\
+template <bool is_ad>
 GenericReal<is_ad>
-ChargeConservationRayKernelTempl<is_ad>::computeQpResidual()
+TestChargeConservationRayKernelTempl<is_ad>::computeQpResidual()
 {
   const auto & ray = currentRay();
   return -ray->data(_charge_index) * ray->data(_weight_index) * ray->direction() * _grad_test[_i][_qp] / this->_dt;
 }
 
-template class ChargeConservationRayKernelTempl<false>;
-template class ChargeConservationRayKernelTempl<true>;
+template class TestChargeConservationRayKernelTempl<false>;
+template class TestChargeConservationRayKernelTempl<true>;
