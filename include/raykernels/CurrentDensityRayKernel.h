@@ -21,9 +21,13 @@ public:
 
 protected:
   virtual GenericReal<is_ad> computeQpResidual() override;
+  /// the component of the velocity vector used for the current density calculation
   const unsigned int _component;
+  /// the index for where the charge of the particle is stored in ray data
   const RayDataIndex _charge_index;
+  /// the index for where the weight of the computational particle is stored in ray data
   const RayDataIndex _weight_index;
+  /// the actual ray data index corrisponding to the velocity component selected is stored in ray data
   RayDataIndex _velocity_index;
 
   usingGenericRayKernelMembers;

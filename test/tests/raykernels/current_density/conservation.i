@@ -87,7 +87,7 @@ qw = ${fparse charge * weight}
     v = unused
   []
   [rho_dot]
-    type = TimeDerivativeAuxKernel
+    type = TestTimeDerivativeAuxKernel
     variable = rho_dot
     u = rho
   []

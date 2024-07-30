@@ -18,8 +18,7 @@ TestChargeConservationRayKernelTempl<is_ad>::validParams()
 {
   InputParameters params = GenericRayKernel<is_ad>::validParams();
 
-  params.addClassDescription("Ray Kernel for mapping current from the particles to the mesh");
-  params.addRangeCheckedParam<unsigned int>("component", "component < 3", "The component of the current you are contributing to");
+  params.addClassDescription("Ray Kernel calculating the discrete variational form of the charge continuity equation");
   return params;
 }
 

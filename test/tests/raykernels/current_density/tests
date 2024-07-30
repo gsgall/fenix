@@ -1,4 +1,6 @@
 [Tests]
+  design = 'CurrentDensityRayKernel.md'
+
   requirement = 'The system shall be able to calculate current density source terms from rays'
   [charge_conservation]
     type = 'Exodiff'

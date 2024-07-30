@@ -21,11 +21,13 @@ public:
 
 protected:
   virtual GenericReal<is_ad> computeQpResidual() override;
+  /// ray data index for where the particle charge is stored
   const RayDataIndex _charge_index;
+  /// ray data index for where the computational particle weight is stored
   const RayDataIndex _weight_index;
 
   usingGenericRayKernelMembers;
-
+  /// the gradient of the test function needed for computing the conservation equation
   const VariableTestGradient & _grad_test;
 };
 
