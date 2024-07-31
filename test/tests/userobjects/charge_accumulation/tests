@@ -1,5 +1,5 @@
 [Tests]
-  design = 'ChargeDensityAccumulator.md'
+  design = 'ChargeDensityAccumulator.md SurfaceChargeDensityAccumulator.md SurfaceChargeRayBC.md'
   issues = '#25'
   [simple_potential_solve]
     type = 'Exodiff'
@@ -13,15 +13,15 @@
     input = 'surface_charge.i'
     exodiff = 'surface_charge_out.e'
     allow_test_objects = true
-    requirement = 'The system shall be capable of allowing surface charge from particles to build up over time'
+    requirement = 'The system shall be capable of allowing surface charge from particles to build up over time.'
   []
   [no_surface_charge_bc]
     type = 'RunException'
     input = surface_charge.i
     allow_test_objects = true
-      allow_warnings = true
-      cli_args = 'RayBCs/surface_charge/type=ReflectRayBC'
-      expect_err = "At least one RayBC must be of type 'SurfaceChargeRayBC' for the 'SurfaceChargeAccumulator' to function properly"
-      detail = 'The system shall return a useful error when the user tries to include surface charging without the proper BCs'
+    allow_warnings = true
+    cli_args = 'RayBCs/surface_charge/type=ReflectRayBC'
+    expect_err = "At least one RayBC must be of type 'SurfaceChargeRayBC' for the 'SurfaceChargeAccumulator' to function properly"
+    requirement  = 'The system shall return a useful error when the user tries to include surface charging without the proper BCs.'
   []
 []

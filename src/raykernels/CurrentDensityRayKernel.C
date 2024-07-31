@@ -18,7 +18,7 @@ CurrentDensityRayKernelTempl<is_ad>::validParams()
 {
   InputParameters params = GenericRayKernel<is_ad>::validParams();
 
-  params.addClassDescription("Ray Kernel for calcing the current source term from particles moving throughout the mesh");
+  params.addClassDescription("RayKernel for calculating the current source from particles while they are being traced.");
   params.addRangeCheckedParam<unsigned int>("component", "component < 3", "The component of the current you are contributing to");
   return params;
 }

@@ -1,19 +1,20 @@
 [Tests]
   design = 'CurrentDensityRayKernel.md'
-
-  requirement = 'The system shall be able to calculate current density source terms from rays'
-  [charge_conservation]
-    type = 'Exodiff'
-    input = 'conservation.i'
-    exodiff = 'conservation_out.e'
-    allow_test_objects = true
-    detail = 'and ensure that conservation of charge is satisfied'
-  []
-  [1d_current_density_source]
-    type = 'Exodiff'
-    input = 'current_density.i'
-    exodiff = 'current_density_out.e'
-    allow_test_objects = true
-    detail = 'based on a charge conservative current mapping scheme'
+  [curreent_density]
+    requirement = 'The system shall be able to calculate current density source terms from rays'
+    [charge_conservation]
+      type = 'Exodiff'
+      input = 'conservation.i'
+      exodiff = 'conservation_out.e'
+      allow_test_objects = true
+      detail = 'and ensure that conservation of charge is satisfied'
+    []
+    [1d_ray_source]
+      type = 'Exodiff'
+      input = 'particle_current_density.i'
+      exodiff = 'particle_current_density_out.e'
+      allow_test_objects = true
+      detail = 'based on a charge conservative current mapping scheme'
+    []
   []
 []

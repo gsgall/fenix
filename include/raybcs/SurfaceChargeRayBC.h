@@ -18,9 +18,9 @@ public:
 
   virtual void onBoundary(const unsigned int num_applying) override;
 
-  std::unordered_map<const Elem*, std::vector<SurfaceChargeData>> surfaceChargeData()
+  const std::unordered_map<const Elem*, std::vector<SurfaceChargeData>> & surfaceChargeData() const
   {
-    return std::move(_charge_data);
+    return _charge_data;
   }
 protected:
 

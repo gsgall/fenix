@@ -25,7 +25,7 @@ InputParameters
 SurfaceChargeDensityAccumulator::validParams()
 {
   auto params = ChargeDensityAccumulatorBase::validParams();
-  params.addClassDescription("Residual accumulator for contributing to the residual of a variable for particles which have contributed surface charge after hitting a boundary");
+  params.addClassDescription("Residual accumulator for contributing charge density sources to the residual of a variable for particles that were killed by a [SurfaceChargeRayBC.md].");
   return params;
 }
 
@@ -73,7 +73,6 @@ SurfaceChargeDensityAccumulator::execute()
       for (const auto & elemental_surface_charge_data : all_surface_charge_data)
       {
         const auto elem = elemental_surface_charge_data.first;
-
         for (const auto & data : elemental_surface_charge_data.second)
         {
           accumulator->add(*elem, data.point, data.value);

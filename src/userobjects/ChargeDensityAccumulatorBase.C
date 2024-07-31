@@ -23,7 +23,7 @@ ChargeDensityAccumulatorBase::validParams()
   params.addClassDescription(
       "Base accumulator used to evaluate the inner product of the charge density and the test function "
       "this provides the general inputs needed for different accumulation types");
-  params.addRequiredParam<UserObjectName>("study", "The PICStudy that owns the charged particles");
+  params.addParam<UserObjectName>("study", "study", "The PICStudy that owns the charged particles");
   // These parameters are necessary when using ResidualAccumulator
   params += TaggingInterface::validParams();
   // This exec flag is necessary for the ChargeDensityAccumulatorBase to contribute to residuals

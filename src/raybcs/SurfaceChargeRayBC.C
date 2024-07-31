@@ -15,7 +15,7 @@ InputParameters
 SurfaceChargeRayBC::validParams()
 {
   auto params = KillRayBC::validParams();
-  params.addClassDescription("A RayBC that SurfaceCharges a Ray on a boundary.");
+  params.addClassDescription("[KillRayBC.md] which keeps track of where rays are killed and the point where they are killed.");
   return params;
 }
 

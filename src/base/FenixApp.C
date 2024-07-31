@@ -43,6 +43,7 @@ FenixApp::registerAll(Factory & f, ActionFactory & af, Syntax & s)
   Registry::registerActionsTo(af, {"FenixApp"});
 
   /* register custom execute flags, action syntax, etc. here */
+  s.registerActionSyntax("AddSurfaceChargingAction", "SurfaceCharging/*");
 }
 
 void
