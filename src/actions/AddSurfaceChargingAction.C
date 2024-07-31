@@ -5,8 +5,9 @@
 #include "SurfaceChargeRayBC.h"
 #include "SurfaceChargeDensityAccumulator.h"
 
+
 registerMooseAction("FenixApp", AddSurfaceChargingAction, "add_ray_boundary_condition");
-registerMooseAction("FenixApp", AddSurfaceChargingAction, "add_user_object");
+registerMooseAction("FenixApp", AddSurfaceChargingAction, "add_surface_charge");
 
 InputParameters
 AddSurfaceChargingAction::validParams()
@@ -33,27 +34,28 @@ AddSurfaceChargingAction::AddSurfaceChargingAction(const InputParameters & param
 void
 AddSurfaceChargingAction::act()
 {
-  if (_current_task == "add_user_object")
+  if (_current_task == "add_surface_charge")
   {
-    std::cout << "Adding User objects" << std::endl;
-    const auto & type = Registry::getClassName<SurfaceChargeDensityAccumulator>();
+    std::cout << "Adding boundary conditions" << std::endl;
+    const auto & type = Registry::getClassName<SurfaceChargeRayBC>();
     auto params = _factory.getValidParams(type);
+    // params.set<UserObjectName>("study") = _study_name;
+    params.set<std::vector<BoundaryName>>("boundary") = _boundaries;
+
+    _problem->addObject<SurfaceChargeRayBC>(type, "surface_charge_bc", params);
+
+    std::cout << "Adding User objects" << std::endl;
+    const auto & type2 = Registry::getClassName<SurfaceChargeDensityAccumulator>();
+    params = _factory.getValidParams(type2);
     params.set<NonlinearVariableName>("variable") = _var_name;
     params.set<UserObjectName>("study") = _study_name;
 
     if (!_extra_vector_tags.empty())
         params.set<std::vector<TagName>>("extra_vector_tags") = _extra_vector_tags;
 
-    _problem->addUserObject(type, "surface_charge_accumulator", params);
+    _problem->addUserObject(type2, "surface_charge_accumulator", params);
   }
-  else if (_current_task == "add_ray_boundary_condition")
-  {
-    std::cout << "Adding boundary conditions" << std::endl;
-    const auto & type = Registry::getClassName<SurfaceChargeRayBC>();
-    auto params = _factory.getValidParams(type);
-    params.set<UserObjectName>("study") = _study_name;
-    params.set<std::vector<BoundaryName>>("boundary") = _boundaries;
-
-    _problem->addObject<RayBoundaryConditionBase>(type, "surface_charge_bc", params);
-  }
+  // else if (_current_task == "add_ray_boundary_condition")
+  // {
+  // }
 }

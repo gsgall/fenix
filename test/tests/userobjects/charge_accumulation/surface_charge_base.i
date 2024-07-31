@@ -5,6 +5,9 @@
   xmin = -1
   xmax = 1
 []
+[Debug]
+  show_actions = true
+[]
 
 [Problem]
   extra_tag_vectors = surface_charge_residual
@@ -56,6 +59,14 @@
   []
 []
 
+
+[SurfaceCharging]
+  [surface_charge]
+    variable = rho
+    extra_vector_tags = surface_charge_residual
+    boundary = 'right'
+  []
+[]
 
 [RayKernels]
   [null]

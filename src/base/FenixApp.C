@@ -36,14 +36,17 @@ FenixApp::FenixApp(InputParameters parameters) : MooseApp(parameters)
 FenixApp::~FenixApp() {}
 
 void
-FenixApp::registerAll(Factory & f, ActionFactory & af, Syntax & s)
+FenixApp::registerAll(Factory & f, ActionFactory & af, Syntax & syntax)
 {
-  ModulesApp::registerAllObjects<FenixApp>(f, af, s);
+  ModulesApp::registerAllObjects<FenixApp>(f, af, syntax);
   Registry::registerObjectsTo(f, {"FenixApp"});
   Registry::registerActionsTo(af, {"FenixApp"});
 
   /* register custom execute flags, action syntax, etc. here */
-  s.registerActionSyntax("AddSurfaceChargingAction", "SurfaceCharging/*");
+  // s.registerActionSyntax("AddSurfaceChargingAction", "SurfaceCharging/*");
+  registerSyntaxTask("AddSurfaceChargingAction", "SurfaceCharging/*", "add_surface_charge");
+  registerMooseObjectTask("add_surface_charge", AddSurfaceChargingAction, false);
+  addTaskDependency("add_surface_charge", "add_user_object");
 }
 
 void
