@@ -118,6 +118,16 @@
   []
 []
 
+
+[VectorPostprocessors]
+  [ray_data]
+    type = TestParticleDataVectorPostprocessor
+    additional_ray_data_outputs = 'mass charge weight'
+    study = study
+    execute_on = TIMESTEP_END
+  []
+[]
+
 [Executioner]
   type = Transient
   dt = 1e-1
@@ -129,9 +139,12 @@
   kernel_coverage_check=false
 []
 
-[Outputs/rays]
+[Outputs]
+  csv=true
+  [rays]
   type = RayTracingExodus
   study = study
   output_data_names='v_x v_y v_z charge mass'
   execute_on = TIMESTEP_BEGIN
+  []
 []

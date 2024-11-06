@@ -102,18 +102,18 @@ PICStudyBase::postExecuteStudy()
   // we store them here to reset them in the generateRays method
   _banked_rays = rayBank();
   // removing all of the rays which were killed during their tracing
-  _banked_rays.erase(std::remove_if(_banked_rays.begin(),
-                                    _banked_rays.end(),
-                                    [](const std::shared_ptr<Ray> & ray)
-                                    {
-                                      if (ray->stationary())
-                                        return false;
+  _banked_rays.erase(
+    std::remove_if(
+      _banked_rays.begin(),
+      _banked_rays.end(),
+      [](const std::shared_ptr<Ray> & ray)
+      {
+        if (ray->stationary())
+          return false;
 
-                                      return std::abs(ray->distance() - ray->maxDistance()) /
-                                                 ray->maxDistance() >
-                                             1e-6;
-                                    }),
-                     _banked_rays.end());
+        return std::abs(ray->distance() - ray->maxDistance()) / ray->maxDistance() > 1e-6;
+      }),
+      _banked_rays.end());
 }
 
 void
