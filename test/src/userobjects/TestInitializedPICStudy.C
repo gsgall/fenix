@@ -74,8 +74,7 @@ TestInitializedPICStudy::initializeParticles()
   if (initial_data[0].elem == nullptr)
     replicated_rays = true;
 
-  std::vector<std::shared_ptr<Ray>> rays(initial_data.size());
-
+  _banked_rays.resize(initial_data.size());
   // keeping track of the current element so we can base
   // ray ids off of the element id
   // this makes it parallel consistent if `allow_renumbering = false`
@@ -95,27 +94,27 @@ TestInitializedPICStudy::initializeParticles()
           _curr_elem_id = initial_data[i].elem->id();
         _curr_elem_ray_count = 0;
       }
-      rays[i] = acquireRay();
+      _banked_rays[i] = acquireRay();
     }
     else
     {
-      rays[i] = acquireReplicatedRay();
+      _banked_rays[i] = acquireReplicatedRay();
     }
 
-    setInitialParticleData(rays[i], initial_data[i]);
+    setInitialParticleData(_banked_rays[i], initial_data[i]);
 
     if (!replicated_rays)
     {
-      getVelocity(*rays[i], _temporary_velocity);
+      getVelocity(*_banked_rays[i], _temporary_velocity);
       _stepper.setupStep(
-          *rays[i], _temporary_velocity, rays[i]->data(_charge_index) / rays[i]->data(_mass_index));
-      setVelocity(*rays[i], _temporary_velocity);
+          *_banked_rays[i], _temporary_velocity, _banked_rays[i]->data(_charge_index) / _banked_rays[i]->data(_mass_index));
+      setVelocity(*_banked_rays[i], _temporary_velocity);
     }
   }
 
   if (!replicated_rays)
   {
-    moveRaysToBuffer(rays);
+    moveRaysToBuffer(_banked_rays);
     return;
   }
   // The unclaimed rays that we're going to generate
@@ -128,7 +127,7 @@ TestInitializedPICStudy::initializeParticles()
   // generate the rays for the local rays that we care about
   // and the claiming probably won't be necessary
   std::vector<std::shared_ptr<Ray>> claimed_rays;
-  ClaimRays claim_rays(*this, rays, claimed_rays, false);
+  ClaimRays claim_rays(*this, _banked_rays, claimed_rays, false);
   claim_rays.claim();
   // lets loop through the claimed rays and set them up for the step
   // we need to do so because before they are claimed the ray does not

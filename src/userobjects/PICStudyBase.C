@@ -138,6 +138,11 @@ PICStudyBase::getBankedRays() const
   return _banked_rays;
 }
 
+const std::vector<InitialParticleData> &
+PICStudyBase::getPeriodicRays() const
+{
+  return _periodic_particles;
+}
 void
 PICStudyBase::setInitialParticleData(std::shared_ptr<Ray> & ray, const InitialParticleData & data)
 {

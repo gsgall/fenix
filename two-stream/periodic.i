@@ -2,7 +2,7 @@
   type = GeneratedMeshGenerator
   dim = 1
   nx = 10
-  xmin = 0
+  xmin = -1
   xmax = 1
 []
 
@@ -13,8 +13,10 @@
 
   [initializer]
     type = TestPlacedParticleInitializer
-    start_points = '0.75 0 0'
-    start_velocities = '1 0 0'
+    start_points = '0.1 0 0
+                    0.75 0 0'
+    start_velocities = '-1 0 0
+                        0.5 0 0'
     mass = 1
     weight = 1
     charge = 1
@@ -46,17 +48,17 @@
 
 [VectorPostprocessors]
   [ray_data]
-    type = TestParticleDataVectorPostprocessor
-    additional_ray_data_outputs = 'mass charge weight'
+    type = TestPeriodicParticleDataVectorPostprocessor
     study = study
-    execute_on = 'INITIAL TIMESTEP_END'
+    additional_ray_data_outputs = 'charge mass weight'
+    execute_on = 'TIMESTEP_END'
   []
 []
 
 [Executioner]
   type = Transient
   dt = 1
-  num_steps = 2
+  num_steps = 3
 []
 
 [Problem]
@@ -65,8 +67,14 @@
 []
 
 [Outputs]
+  # [rays]
+  #   type = RayTracingExodus
+  #   study = study
+  #   output_data = true
+  #   execute_on = 'TIMESTEP_END'
+  # []
   [particle_data]
     type = CSV
-    execute_on = 'INITIAL TIMESTEP_END'
+    execute_on = 'TIMESTEP_END'
   []
 []

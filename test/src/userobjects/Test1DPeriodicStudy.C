@@ -14,6 +14,8 @@
 //*
 
 #include "Test1DPeriodicStudy.h"
+#include "ParticleStepperBase.h"
+#include "ClaimRays.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -51,30 +53,119 @@ Test1DPeriodicStudy::Test1DPeriodicStudy(const InputParameters & parameters)
   comm().min(_x_min);
   comm().max(_x_max);
 }
+void
+Test1DPeriodicStudy::reinitializeParticles()
+{
+  // Reset each ray
+  for (auto & ray : _banked_rays)
+  {
+    // Store off the ray's info before we reset it
+    const auto elem = ray->currentElem();
+    const auto point = ray->currentPoint();
+    const auto distance = ray->distance();
+
+    getVelocity(*ray, _temporary_velocity);
+    // Reset it (this is required to reuse a ray)
+    ray->resetCounters();
+    ray->clearStartingInfo();
+
+    // And set the new starting information
+    ray->setStart(point, elem);
+    _stepper.setupStep(
+        *ray, _temporary_velocity, ray->data()[_charge_index] / ray->data()[_mass_index], distance);
+
+    setVelocity(*ray, _temporary_velocity);
+  }
+  
+  if (_periodic_particles.empty())
+    return; 
+
+  std::vector<std::shared_ptr<Ray>> _unclaimed_rays;
+  for (const auto i : make_range(_periodic_particles.size()))
+  {
+    auto & ray = _unclaimed_rays.emplace_back(acquireReplicatedRay()); 
+
+    setInitialParticleData(ray, _periodic_particles[i]); 
+  }
+
+
+  std::vector<std::shared_ptr<Ray>> claimed_rays;
+  ClaimRays claim_rays(*this, _unclaimed_rays, claimed_rays, false);
+  claim_rays.claim();
+  // lets loop through the claimed rays and set them up for the step
+  // we need to do so because before they are claimed the ray does not
+  // know what element it is in
+  for (auto & ray : claimed_rays)
+  {
+    getVelocity(*ray, _temporary_velocity);
+    _stepper.setupStep(
+        *ray, _temporary_velocity, ray->data()[_charge_index] / ray->data()[_mass_index]);
+    setVelocity(*ray, _temporary_velocity);
+  }
+  // ...and then add them to be traced
+  moveRaysToBuffer(claimed_rays);
+}
+
 
 void 
 Test1DPeriodicStudy::postExecuteStudy() {  
   _periodic_particles.clear(); 
   _banked_rays = rayBank(); 
-  Point curr_pos; 
-  for (const auto & ray : _banked_rays) 
-  {
-    if (std::abs(ray->distance() - ray->maxDistance()) / ray->maxDistance() < 1e-6)
-      break;
-    if (std::signbit(ray->direction()(0))) 
-    {
-      curr_pos(0) = _x_max - std::abs(std::remainder(ray->maxDistance() - ray->distance(), _domain_length));
-    }
-    else 
-    {
-      curr_pos(0) = _x_min + std::abs(std::remainder(ray->maxDistance() - ray->distance(), _domain_length));
-    }
-  }
-//   // TODO: add the parallel version of this but 
-//   // need to concatinate all of the data from all of the processes 
-//  // and then make sure all processes have all of the data so we can create replicated rays
-//  // potentially could use a gather to the root and then broadcast everything to everyone but 
-//  // // need to check if there is a method like set_union for this vector of structs 
-//  std::cout << _periodic_particles.size() << std::endl;
+  
+  std::vector<Real> x_pos, mass, charge, weight, vx, vy, vz; 
+  std::vector<int> species; 
 
+
+  _banked_rays.erase(
+    std::remove_if(
+      _banked_rays.begin(),
+      _banked_rays.end(),
+      [this, &x_pos, &mass, &charge, &weight, &species, &vx, &vy, &vz](const std::shared_ptr<Ray> & ray)
+      {
+        std::cout << ray->getInfo() << std::endl;
+        if (std::abs(ray->distance() - ray->maxDistance()) / ray->maxDistance() < 1e-6 ||  ray->stationary())
+          return false;
+        
+        mass.push_back(ray->data(_mass_index)); 
+        charge.push_back(ray->data(_charge_index)); 
+        weight.push_back(ray->data(_weight_index)); 
+        species.push_back(ray->data(_species_index)); 
+        vx.push_back(ray->data(_v_x_index)); 
+        vy.push_back(ray->data(_v_y_index)); 
+        vz.push_back(ray->data(_v_z_index)); 
+
+        if (std::signbit(ray->direction()(0))) 
+        {
+          x_pos.push_back(_x_max - std::abs(std::fmod(ray->maxDistance() - ray->distance(), _domain_length)));
+        }
+        else 
+        {
+          x_pos.push_back(_x_min + std::abs(std::fmod(ray->maxDistance() - ray->distance(), _domain_length)));
+        }
+
+        return true; 
+      }),
+      _banked_rays.end());
+      comm().allgather(x_pos, false); 
+      comm().allgather(mass, false); 
+      comm().allgather(charge, false); 
+      comm().allgather(species, false); 
+      comm().allgather(weight, false); 
+      comm().allgather(vx, false); 
+      comm().allgather(vy, false); 
+      comm().allgather(vz, false); 
+
+      for (const auto i : make_range(x_pos.size()))
+      { 
+        auto & data = _periodic_particles.emplace_back(); 
+        data.elem = nullptr; 
+        data.position(0) = x_pos[i]; 
+        data.mass = mass[i]; 
+        data.charge = charge[i]; 
+        data.species = species[i]; 
+        data.weight = weight[i]; 
+        data.velocity(0) = vx[i]; 
+        data.velocity(1) = vy[i]; 
+        data.velocity(2) = vz[i]; 
+      }
 }

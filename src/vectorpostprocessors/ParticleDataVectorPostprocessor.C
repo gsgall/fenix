@@ -15,6 +15,7 @@
 
 #include "ParticleDataVectorPostprocessor.h"
 #include "PICStudyBase.h"
+#include "ParticleInitializerBase.h"
 
 registerMooseObject("FenixApp", ParticleDataVectorPostprocessor);
 
@@ -53,12 +54,15 @@ ParticleDataVectorPostprocessor::ParticleDataVectorPostprocessor(const InputPara
   if (additional_ray_data.empty())
     return;
 
+
   const auto & additional_data_indicies = _study.getRayDataIndices(additional_ray_data);
+
   _ray_data_indices.insert(
       _ray_data_indices.end(), additional_data_indicies.begin(), additional_data_indicies.end());
 
   for (const auto & data_name : additional_ray_data)
     _data_values.push_back(&declareVector(data_name));
+  
 }
 
 void
@@ -73,7 +77,6 @@ ParticleDataVectorPostprocessor::execute()
 {
 
   const auto rays = _study.getBankedRays();
-  std::cout << rays.size() << std::endl;
   for (const auto & ray : rays)
   {
     // storing the time at which the particle position is known

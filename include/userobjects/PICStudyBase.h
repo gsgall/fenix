@@ -34,8 +34,12 @@ public:
    * useful for looking at the rays data if needed by another object
    */
   const std::vector<std::shared_ptr<Ray>> & getBankedRays() const;
+  const std::vector<InitialParticleData> & getPeriodicRays() const; 
 
 protected:
+  /// the place to store rays which are periodic and will get restarted
+  std::vector<InitialParticleData> _periodic_particles;
+  std::vector<RayID> _periodic_ids;
   /// The banked rays to be used on the next timestep (restartable)
   std::vector<std::shared_ptr<Ray>> & _banked_rays;
 

@@ -34,9 +34,9 @@ protected:
   /// The the particles which have hit the walls and need to be 
   /// created as replicated rays since they could be anywhere in the 
   /// domain 
-  std::vector<InitialParticleData> _periodic_particles;
   Real _x_min; 
   Real _x_max; 
   Real _domain_length;
+  virtual void reinitializeParticles() override; 
   virtual void postExecuteStudy() override;
 };
