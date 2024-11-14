@@ -122,7 +122,6 @@ Test1DPeriodicStudy::postExecuteStudy() {
       _banked_rays.end(),
       [this, &x_pos, &mass, &charge, &weight, &species, &vx, &vy, &vz](const std::shared_ptr<Ray> & ray)
       {
-        std::cout << ray->getInfo() << std::endl;
         if (std::abs(ray->distance() - ray->maxDistance()) / ray->maxDistance() < 1e-6 ||  ray->stationary())
           return false;
         
@@ -146,6 +145,7 @@ Test1DPeriodicStudy::postExecuteStudy() {
         return true; 
       }),
       _banked_rays.end());
+
       comm().allgather(x_pos, false); 
       comm().allgather(mass, false); 
       comm().allgather(charge, false); 
@@ -167,5 +167,16 @@ Test1DPeriodicStudy::postExecuteStudy() {
         data.velocity(0) = vx[i]; 
         data.velocity(1) = vy[i]; 
         data.velocity(2) = vz[i]; 
+      }
+      
+      for (auto & data : _periodic_particles)
+      {
+        for (auto elem : *_fe_problem.mesh().getActiveLocalElementRange())
+        {
+          if (elem->contains_point(data.position))
+          {
+            data.elem = elem;
+          }
+        }
       }
 }

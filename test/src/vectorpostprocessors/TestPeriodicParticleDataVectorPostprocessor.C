@@ -44,6 +44,9 @@ TestPeriodicParticleDataVectorPostprocessor::execute()
 
   const auto & periodic_rays = _study.getPeriodicRays(); 
 
+  if (comm().rank() != 0)
+    return; 
+
   for (const auto & data : periodic_rays)
   {
     // storing the time at which the particle position is known
@@ -84,7 +87,7 @@ TestPeriodicParticleDataVectorPostprocessor::finalize()
   // This is because of the current implementation of the periodic boundaries. 
   // If a ray hits a boundary and needs to be moved to the other side currently 
   // it is removed from banked rays and then a new replicated ray is used and claimed. 
-  // this means the same computional particle can have a different id between time steps.
+  // this means the same computional particle can have a different id between time stepsear
   std::vector<size_t> indicies;
   indicies.resize(_data_values.front()->size());
   std::iota(indicies.begin(), indicies.end(), 0);
