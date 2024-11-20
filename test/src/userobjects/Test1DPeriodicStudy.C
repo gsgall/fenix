@@ -120,7 +120,7 @@ Test1DPeriodicStudy::postExecuteStudy() {
     std::remove_if(
       _banked_rays.begin(),
       _banked_rays.end(),
-      [this, &x_pos, &mass, &charge, &weight, &species, &vx, &vy, &vz](const std::shared_ptr<Ray> & ray)
+      [&](const std::shared_ptr<Ray> & ray)
       {
         if (std::abs(ray->distance() - ray->maxDistance()) / ray->maxDistance() < 1e-6 ||  ray->stationary())
           return false;

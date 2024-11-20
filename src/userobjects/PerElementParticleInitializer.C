@@ -16,7 +16,7 @@
 #include "PerElementParticleInitializer.h"
 #include "MooseRandom.h"
 #include "ElementSampler.h"
-
+#include "Distribution.h"
 registerMooseObject("FenixApp", PerElementParticleInitializer);
 
 InputParameters
