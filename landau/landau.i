@@ -1,5 +1,3 @@
-# L = ${fparse 2 * pi}
-
 [Mesh]
     [gmg]
       type = GeneratedMeshGenerator
@@ -24,21 +22,6 @@
   []
 []
 
-# [Functions]
-#   [phi_ic]
-#     type = ParsedFunction
-#     expression = 'sin(pi * x)'
-#   []
-# []
-
-# [ICs]
-#     [phi_init]
-#         type = FunctionIC
-#         function = phi_ic
-#         variable = phi
-#     []
-# []
-
 [BCs]
     [Periodic]
       [all]
@@ -57,7 +40,7 @@
     [background]
         type = BodyForce
         variable = phi 
-        value = 2
+        value = 1
     []
 
     [projection]
@@ -68,19 +51,16 @@
     [rho_background]
       type = BodyForce
       variable = rho 
-      value = 2
+      value = 1
   []
 []
 
 
 [Distributions]
-  [left]
-      type = Constant
-      value = -1
-  []
-  [right]
-      type = Constant
-      value = 1
+  [vel]
+    type = Normal
+    mean = 0
+    standard_deviation = 1
   []
   [zero]
     type = Constant
@@ -115,32 +95,21 @@
     field_components = 'Ex Ey Ez'
   []
 
-  [left]
-      type = PerturbationParticleInitializer
-      mass = 1
-      charge = -1
-      number_density = 1
-      particles_per_element = 20
-      perturbation_length = 1e-4
-      instability_mode = 1
-      velocity_distributions = 'left zero zero'
-  []
-
-  [right]
+  [initializer]
     type = PerturbationParticleInitializer
     mass = 1
     charge = -1
     number_density = 1
-    particles_per_element = 20
-    perturbation_length = 1e-4
+    particles_per_element = 200
+    perturbation_length = 1e-2
     instability_mode = 1
-    velocity_distributions = 'right zero zero'
+    velocity_distributions = 'vel zero zero'
   []
 
   [study]
     type = Test1DPeriodicStudy
     stepper = stepper
-    initializers = 'left right'
+    initializers = 'initializer'
     always_cache_traces = true
     data_on_cache_traces = true
     use_custom_rayids = false 
@@ -174,9 +143,16 @@
   
 []
 
+[Postprocessors]
+  [ray_count]
+    type = RayTracingStudyResult
+    result = TOTAL_RAYS_STARTED
+    study = study
+  []
+[]
 [VectorPostprocessors]
   [rays]
-      type = ParticleDataVectorPostprocessor
+      type = TestPeriodicParticleDataVectorPostprocessor 
       study = study
       additional_ray_data_outputs = 'weight charge mass'
   []
@@ -198,7 +174,7 @@
 [Executioner]
   type = Transient
   # num_steps = 100
-  end_time = 100
+  end_time = 150
   dt = 0.1
   compute_scaling_once = false 
   automatic_scaling = true

@@ -13,6 +13,7 @@
 //* ALL RIGHTS RESERVED
 //*
 
+#include "MooseUtils.h"
 #include "Test1DPeriodicStudy.h"
 #include "ParticleStepperBase.h"
 #include "ClaimRays.h"
@@ -20,6 +21,7 @@
 #include <cmath>
 #include <limits>
 #include <ostream>
+#include <sstream>
 
 registerMooseObject("FenixTestApp", Test1DPeriodicStudy);
 
@@ -109,9 +111,12 @@ Test1DPeriodicStudy::reinitializeParticles()
 
 void 
 Test1DPeriodicStudy::postExecuteStudy() {  
+
   _periodic_particles.clear(); 
   _banked_rays = rayBank(); 
   
+  unsigned int initial_particle_count = _banked_rays.size(); 
+
   std::vector<Real> x_pos, mass, charge, weight, vx, vy, vz; 
   std::vector<int> species; 
 
@@ -122,7 +127,7 @@ Test1DPeriodicStudy::postExecuteStudy() {
       _banked_rays.end(),
       [&](const std::shared_ptr<Ray> & ray)
       {
-        if (std::abs(ray->distance() - ray->maxDistance()) / ray->maxDistance() < 1e-6 ||  ray->stationary())
+        if (MooseUtils::absoluteFuzzyEqual(ray->maxDistance(), ray->distance())||  ray->stationary())
           return false;
         
         mass.push_back(ray->data(_mass_index)); 
@@ -179,4 +184,12 @@ Test1DPeriodicStudy::postExecuteStudy() {
           }
         }
       }
+
+    unsigned int final_particle_count = _banked_rays.size() + _periodic_particles.size(); 
+    std::stringstream ss; 
+    ss << "Inconsistet particle population\n"; 
+    ss << "Initial Count: " << initial_particle_count << "\n"; 
+    ss << "  Final Count: " << final_particle_count << "\n"; 
+
+    std::cout << ss.str() << std::endl;
 }

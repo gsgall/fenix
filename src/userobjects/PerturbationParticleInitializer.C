@@ -102,7 +102,7 @@ PerturbationParticleInitializer::getParticleData() const
   for (const auto & i : make_range(physical_points.size()))
   {
     physical_points[i](0) = (i + 0.5) * dx; 
-    physical_points[i](0) += _pertabtion_factor * std::cos(2 * M_PI * _instability_mode / domain_length * physical_points[i](0));
+    physical_points[i](0) += _pertabtion_factor * std::sin(2 * M_PI * _instability_mode / domain_length * physical_points[i](0));
 
     if (physical_points[i](0) > global_xmax) 
     {
