@@ -184,12 +184,4 @@ Test1DPeriodicStudy::postExecuteStudy() {
           }
         }
       }
-
-    unsigned int final_particle_count = _banked_rays.size() + _periodic_particles.size(); 
-    std::stringstream ss; 
-    ss << "Inconsistet particle population\n"; 
-    ss << "Initial Count: " << initial_particle_count << "\n"; 
-    ss << "  Final Count: " << final_particle_count << "\n"; 
-
-    std::cout << ss.str() << std::endl;
 }

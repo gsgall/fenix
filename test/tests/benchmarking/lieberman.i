@@ -102,8 +102,8 @@ num_samples = ${fparse num_elem + 1}
 
 [UserObjects]
   [stepper]
-    type = LeapFrogStepper
-    field_components = 'Ex Ey Ez'
+    type = ElectrostaticLeapFrogStepper
+    potential = 'phi'
   []
 
   [initializer]

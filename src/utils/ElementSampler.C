@@ -87,6 +87,8 @@ ElementSampler::sampleElement(const Elem * elem, const unsigned int samples)
   {
     // 1D reference elements x = [-1, 1]
     case EDGE2:
+    case EDGE3:
+    case EDGE4:
     {
       for (const auto i : make_range(samples))
         reference_points[i](0) = 2.0 * _generator.rand() - 1.0;
