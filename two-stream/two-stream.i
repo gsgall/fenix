@@ -18,8 +18,6 @@
 [Variables]
   [phi]
   []
-  [rho]
-  []
 []
 
 [BCs]
@@ -33,37 +31,26 @@
 [Kernels]
     [poissons]
         type = ADMatDiffusion
-        diffusivity = 1
+        diffusivity = 8.8541878188e-12
         variable = phi
     []
 
     [background]
         type = BodyForce
         variable = phi
-        value = 2
+        value = ${fparse -2 * 1.602e-19}
     []
-
-    [projection]
-        type = ProjectionKernel
-        variable = rho
-    []
-
-    [rho_background]
-      type = BodyForce
-      variable = rho
-      value = 1
-  []
 []
 
 
 [Distributions]
   [left]
       type = Constant
-      value = -1
+      value = -2
   []
   [right]
       type = Constant
-      value = 1
+      value = 2
   []
   [zero]
     type = Constant
@@ -112,8 +99,8 @@
 
   [left]
       type = PerturbationParticleInitializer
-      mass = 1
-      charge = -1
+      mass = 6.6464731e-27
+      charge = 1.602e-19
       number_density = 1
       particles_per_element = 40
       perturbation_length = 1e-4
@@ -124,8 +111,8 @@
 
   [right]
     type = PerturbationParticleInitializer
-    mass = 1
-    charge = -1
+    mass = 2.1801714e-25
+    charge = 1.602e-19
     number_density = 1
     particles_per_element = 40
     perturbation_length = 1e-4
@@ -155,19 +142,6 @@
       study = study
       variable = phi
   []
-
-  [rho_charge_accumulator]
-      type = ChargeDensityAccumulator
-      study = study
-      variable = rho
-  []
-
-  [rho_periodic_charge]
-      type = PeriodicChargeDensityAccumulator
-      study = study
-      variable = rho
-  []
-
 []
 
 [Postprocessors]
@@ -206,11 +180,10 @@
 
 [Executioner]
   type = Transient
-  end_time = 30
-  dt = 0.05
-  # compute_scaling_once = false
-  # automatic_scaling = true
-  # line_search = none
+  end_time = 60
+  dt = 0.025
+  compute_scaling_once = false
+  automatic_scaling = true
 []
 
 [Outputs]
