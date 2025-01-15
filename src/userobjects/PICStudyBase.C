@@ -13,6 +13,7 @@
 //* ALL RIGHTS RESERVED
 //*
 
+#include "MooseError.h"
 #include "PICStudyBase.h"
 #include "ParticleStepperBase.h"
 
@@ -143,9 +144,42 @@ PICStudyBase::getPeriodicRays() const
 {
   return _periodic_particles;
 }
+
+const unsigned int 
+PICStudyBase::getSpeciesValue(const std::string & species) const
+{
+
+  auto it = std::find(_species_names.begin(), _species_names.end(), species); 
+  if (it == _species_names.end())
+  {
+    std::stringstream ss; 
+    ss << "Requested species '" << species << "' does not exist!\n\n";
+    ss << "Species List\n";
+
+    for (const auto & s : _species_names)
+    {
+      ss << "  " << s << "\n";
+    }
+
+    mooseError(ss.str()); 
+    return -1; 
+  }
+  return it - _species_names.begin();  
+}
+
 void
 PICStudyBase::setInitialParticleData(std::shared_ptr<Ray> & ray, const InitialParticleData & data)
 {
+  unsigned int species_val; 
+  auto it = std::find(_species_names.begin(), _species_names.end(), data.species); 
+  if (it == _species_names.end())
+  {
+    species_val = _species_names.size();
+    _species_names.push_back(data.species); 
+  } else {
+    species_val = it - _species_names.begin(); 
+  }
+
   ray->setStart(data.position, data.elem);
   ray->data(_v_x_index) = data.velocity(0);
   ray->data(_v_y_index) = data.velocity(1);
@@ -153,4 +187,5 @@ PICStudyBase::setInitialParticleData(std::shared_ptr<Ray> & ray, const InitialPa
   ray->data(_mass_index) = data.mass;
   ray->data(_weight_index) = data.weight;
   ray->data(_charge_index) = data.charge;
+  ray->data(_species_index) = species_val;
 }

@@ -114,8 +114,6 @@ Test1DPeriodicStudy::postExecuteStudy() {
 
   _periodic_particles.clear(); 
   _banked_rays = rayBank(); 
-  
-  unsigned int initial_particle_count = _banked_rays.size(); 
 
   std::vector<Real> x_pos, mass, charge, weight, vx, vy, vz; 
   std::vector<int> species; 
@@ -167,7 +165,7 @@ Test1DPeriodicStudy::postExecuteStudy() {
         data.position(0) = x_pos[i]; 
         data.mass = mass[i]; 
         data.charge = charge[i]; 
-        data.species = species[i]; 
+        data.species = _species_names[species[i]]; 
         data.weight = weight[i]; 
         data.velocity(0) = vx[i]; 
         data.velocity(1) = vy[i]; 

@@ -35,6 +35,7 @@ public:
    */
   const std::vector<std::shared_ptr<Ray>> & getBankedRays() const;
   const std::vector<InitialParticleData> & getPeriodicRays() const; 
+  const unsigned int getSpeciesValue(const std::string & species) const; 
 
 protected:
   /// the place to store rays which are periodic and will get restarted
@@ -65,6 +66,8 @@ protected:
 
   /// temporary variable used when resetting rays
   Point _temporary_velocity;
+  /// place to store the data needed to keep track of all of the different types of particles 
+  std::vector<std::string> _species_names; 
   /**
    * Method for getting a rays velocity as a vector
    * Each component is retrieved from ray data and given
